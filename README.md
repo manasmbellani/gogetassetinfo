@@ -73,7 +73,7 @@ echo -e "1.1.1.1\n2.2.2.2" | go run gogetassetinfo.go  -mi ipinfo.io
 ```
 
 ### Using DNS Resolutions 
-To get the DNS resolutions for MX, DNS, A records for a domain
+To get the DNS resolutions for MX, DNS, A records for domains listed in file `domains.txt`
 ```
 # A record
 cat domains.txt | go run gogetassetinfo.go -md dnsa 
@@ -84,3 +84,16 @@ cat domains.txt | go run gogetassetinfo.go -md dnstxt
 # MX record
 cat domains.txt | go run gogetassetinfo.go -md dnsmx 
 ```
+
+### TODO:
+#### URL
+* Check Phishtank status for a URL
+* Get ALL URL redirections
+* Get response headers in the URL
+* Get Virustotal IOC for a URL
+
+#### Domain 
+* Get Virustotal IOC for a domain
+
+#### IP
+* Open IP in Shodan
