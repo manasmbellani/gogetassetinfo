@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -20,10 +21,10 @@ import (
 const RegexIP = "^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$"
 
 // IPMethods - List of all the methods to apply to IP assets
-var IPMethods []string = []string{"iphub", "whois"}
+var IPMethods []string = []string{"iphub", "whois", "alienvault"}
 
 // DomainMethods - List of all the methods to apply to domain assets
-var DomainMethods []string = []string{"whois"}
+var DomainMethods []string = []string{"whois", "alienvault"}
 
 // DefUserAgent - Default user agent to use for all web requests
 var DefUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
@@ -39,6 +40,18 @@ const IPHubKeyEnvVar = "IPHUB_KEY"
 
 // IPHubAPIURL - The URL for IPHub API to send request for getting info on IP
 const IPHubAPIURL = "https://v2.api.iphub.info"
+
+// AlienVaultIndicatorURL - the URL to get the Alienvault indicators
+const AlienVaultIndicatorURL = "https://otx.alienvault.com/api/v1/indicators"
+
+// AlienVaultIPv4Sections - sections to get for IPv4 from AlienVault
+const AlienVaultIPv4Sections = "general,reputation,geo,malware,url_list,passive_dns,http_scans"
+
+// AlienVaultIPv6Sections - sections to get for IPv6 from AlienVault
+const AlienVaultIPv6Sections = "general,reputation,geo,malware,url_list,passive_dns"
+
+// AlienVaultDomainSections - sections to get for domain from AlienVault
+const AlienVaultDomainSections = "general,geo,malware,url_list,whois,passive_dns"
 
 // IsAssetIP - Check if the supplied asset is an IP address?
 func IsAssetIP(asset string, method string) bool {
@@ -82,6 +95,26 @@ func GetIPInfoIPHub(asset string, ipHubAPIKey string) string {
 	return string(respBody)
 }
 
+// openbrowser - Opens a browser in relevant OS to display URL
+func openbrowser(url string) {
+	var err error
+
+	switch runtime.GOOS {
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+	case "windows":
+		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+	case "darwin":
+		err = exec.Command("open", url).Start()
+	default:
+		err = fmt.Errorf("unsupported platform")
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+
+}
+
 // execCmd - Execute command via shell and return the output
 func execCmd(cmdToExec string) string {
 	cmd := exec.Command("/bin/bash", "-c", cmdToExec)
@@ -109,6 +142,48 @@ func execCmd(cmdToExec string) string {
 func GetWhoIs(asset string) string {
 	cmdToExec := "whois " + asset
 	return execCmd(cmdToExec)
+}
+
+// GetAlienVaultInfo - Get the alienvault information for asset (IP/IPv4, domain)
+func GetAlienVaultInfo(asset string, assetType string) string {
+
+	// Store the output
+	out := ""
+
+	// Prepare sections to get
+	var sections []string
+	var alienVaultURL string
+
+	// Get the sections to get for alienvault
+	if assetType == "ipv4" || assetType == "ip" {
+		sections = strings.Split(AlienVaultIPv4Sections, ",")
+		alienVaultURL = AlienVaultIndicatorURL + "/IPv4/" + asset
+	} else if assetType == "domain" {
+		sections = strings.Split(AlienVaultDomainSections, ",")
+		alienVaultURL = AlienVaultIndicatorURL + "/domain/" + asset
+	} else {
+		log.Fatalf("Unknown assetType: %s", assetType)
+	}
+
+	// Prepare the HTTP client to make reequests to AlienVault
+	client := &http.Client{}
+
+	url := ""
+	for _, section := range sections {
+		url = alienVaultURL + "/" + section
+
+		// Setup a request template with the User Agent and API Key Header
+		req, _ := http.NewRequest("GET", url, nil)
+		req.Header.Set("User-Agent", DefUserAgent)
+
+		// Send web request
+		resp, _ := client.Do(req)
+		respBody, _ := ioutil.ReadAll(resp.Body)
+
+		out += "\n" + string(respBody)
+	}
+
+	return out
 }
 
 func main() {
@@ -156,12 +231,18 @@ func main() {
 			ipInfo := ""
 			domainInfo := ""
 			for asset := range assets {
+
+				// let user know that we are getting info on asset
+				log.Printf("Getting info on asset: %s", asset)
+
 				// Check the asset type - is it an IP?
 				if IsAssetIP(asset, "") {
 					if methodIP == "iphub" {
 						ipInfo = GetIPInfoIPHub(asset, ipHubKey)
 					} else if methodIP == "whois" {
 						ipInfo = GetWhoIs(asset)
+					} else if methodIP == "alienvault" {
+						ipInfo = GetAlienVaultInfo(asset, "ip")
 					} else {
 						log.Fatalf("Unknown IP method: %s", methodIP)
 					}
@@ -176,6 +257,8 @@ func main() {
 					// Asset is domain - get asset information appropriately
 					if methodDomain == "whois" {
 						domainInfo = GetWhoIs(asset)
+					} else if methodDomain == "alienvault" {
+						domainInfo = GetAlienVaultInfo(asset, "domain")
 					} else {
 						log.Fatalf("No support for domain related methods yet")
 					}

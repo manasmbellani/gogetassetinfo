@@ -11,6 +11,7 @@ go install gogetassetinfo.go
 
 ## Supported API Sources
 * IPHub.info - API which provides IP types (residential/proxy) for various ip addresses
+* WhoIs - Provide Whois information on domain/IP
 
 ## Usage
 
@@ -25,4 +26,10 @@ More info about the API is available `here`: https://iphub.info/api
 To get the WhoIs information about given domain/IP: -
 ```
 echo -e "1.1.1.1\n2.2.2.2" | go run gogetassetinfo.go  -mi whois | tee /tmp/results.txt
+```
+
+### Using Alienvault
+To get the Alienvault pulses and other info about the domain/IP :-
+```
+echo -e "1.1.1.1\n2.2.2.2" | go run gogetassetinfo.go  -mi alienvault -md alienvault | tee /tmp/results.txt
 ```
