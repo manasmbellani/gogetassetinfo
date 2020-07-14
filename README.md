@@ -15,7 +15,14 @@ go install gogetassetinfo.go
 ## Usage
 
 ### Using IPHub
-To get information about given IP, run following command: 
+To get information about given IPs in file `/tmp/ips.txt`, simply run following command:-
 ```
-cat /tmp/ips.txt | go run gogetassetinfo.go -mi iphub
+cat /tmp/ips.txt | go run gogetassetinfo.go -mi iphub | tee /tmp/results.txt
+```
+More info about the API is available `here`: https://iphub.info/api
+
+### Using whois
+To get the WhoIs information about given domain/IP: -
+```
+echo -e "1.1.1.1\n2.2.2.2" | go run gogetassetinfo.go  -mi whois | tee /tmp/results.txt
 ```

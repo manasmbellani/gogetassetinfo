@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 	"sync"
@@ -19,16 +20,16 @@ import (
 const RegexIP = "^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$"
 
 // IPMethods - List of all the methods to apply to IP assets
-var IPMethods []string = []string{"iphub"}
+var IPMethods []string = []string{"iphub", "whois"}
 
 // DomainMethods - List of all the methods to apply to domain assets
-var DomainMethods []string = []string{""}
+var DomainMethods []string = []string{"whois"}
 
 // DefUserAgent - Default user agent to use for all web requests
 var DefUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
 
 // DefMethodDomain - Default method for domain to get more info
-const DefMethodDomain = ""
+const DefMethodDomain = "whois"
 
 // DefMethodIP - Default method for domain to get more info
 const DefMethodIP = "iphub"
@@ -81,6 +82,35 @@ func GetIPInfoIPHub(asset string, ipHubAPIKey string) string {
 	return string(respBody)
 }
 
+// execCmd - Execute command via shell and return the output
+func execCmd(cmdToExec string) string {
+	cmd := exec.Command("/bin/bash", "-c", cmdToExec)
+	out, err := cmd.CombinedOutput()
+	outStr := ""
+	errStr := ""
+	if out == nil {
+		outStr = ""
+	} else {
+		outStr = string(out)
+	}
+
+	if err == nil {
+		errStr = ""
+	} else {
+		errStr = string(err.Error())
+	}
+
+	totalOut := (outStr + "\n" + errStr)
+
+	return totalOut
+}
+
+// GetWhoIs - Perform the Whois on the asset (IP/domain)
+func GetWhoIs(asset string) string {
+	cmdToExec := "whois " + asset
+	return execCmd(cmdToExec)
+}
+
 func main() {
 	threadsPtr := flag.Int("t", 1,
 		"Number of threads to use. When to set to 1, no concurrency.")
@@ -124,25 +154,36 @@ func main() {
 			defer wg.Done()
 
 			ipInfo := ""
+			domainInfo := ""
 			for asset := range assets {
 				// Check the asset type - is it an IP?
 				if IsAssetIP(asset, "") {
 					if methodIP == "iphub" {
-						// Process IP address information provided
 						ipInfo = GetIPInfoIPHub(asset, ipHubKey)
-
+					} else if methodIP == "whois" {
+						ipInfo = GetWhoIs(asset)
 					} else {
 						log.Fatalf("Unknown IP method: %s", methodIP)
 					}
 
 					// Display results to the user
 					if ipInfo != "" {
-						fmt.Printf("Info on IP: %s via method: %s\n%s\n\n", asset,
+						fmt.Printf("[+] Info on IP: %s via method: %s\n%s\n\n", asset,
 							methodIP, ipInfo)
 					}
 
 				} else {
-					log.Fatalf("No support for domain related methods yet")
+					// Asset is domain - get asset information appropriately
+					if methodDomain == "whois" {
+						domainInfo = GetWhoIs(asset)
+					} else {
+						log.Fatalf("No support for domain related methods yet")
+					}
+
+					if domainInfo != "" {
+						fmt.Printf("[+] Info on domain: %s via method: %s\n%s\n\n", asset,
+							methodDomain, domainInfo)
+					}
 				}
 
 				// Sleep for a few seconds before making next request
