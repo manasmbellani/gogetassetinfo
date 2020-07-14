@@ -21,7 +21,8 @@ import (
 const RegexIP = "^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$"
 
 // IPMethods - List of all the methods to apply to IP assets
-var IPMethods []string = []string{"iphub", "whois", "alienvault"}
+var IPMethods []string = []string{"iphub", "whois", "alienvault", "ipinfo.io",
+	"scamalytics", "ipqualityscore"}
 
 // DomainMethods - List of all the methods to apply to domain assets
 var DomainMethods []string = []string{"whois", "alienvault"}
@@ -40,6 +41,15 @@ const IPHubKeyEnvVar = "IPHUB_KEY"
 
 // IPHubAPIURL - The URL for IPHub API to send request for getting info on IP
 const IPHubAPIURL = "https://v2.api.iphub.info"
+
+// ScamalyticsURL - The URL for Scamalytics
+const ScamalyticsURL = "https://scamalytics.com/ip/"
+
+// IPInfoAPIURL - The URL for ipinfo.io
+const IPInfoAPIURL = "https://ipinfo.io"
+
+// IPQualityScoreURL - URL for the IP Quality Score website
+const IPQualityScoreURL = "https://www.ipqualityscore.com/free-ip-lookup-proxy-vpn-test/lookup"
 
 // AlienVaultIndicatorURL - the URL to get the Alienvault indicators
 const AlienVaultIndicatorURL = "https://otx.alienvault.com/api/v1/indicators"
@@ -61,6 +71,26 @@ func IsAssetIP(asset string, method string) bool {
 
 	found, _ := regexp.MatchString(RegexIP, asset)
 	return found
+}
+
+// GetIPInfoIo - Get IP information via ipinfo.io
+func GetIPInfoIo(asset string) string {
+
+	// Building the HTTP request template
+	client := &http.Client{}
+
+	// Build the URL to call to get info on IP
+	url := fmt.Sprintf(IPInfoAPIURL+"/%s/json", asset)
+
+	// Setup a request template with the User Agent and API Key Header
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("User-Agent", DefUserAgent)
+
+	// Send web request
+	resp, _ := client.Do(req)
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
+	return string(respBody)
 }
 
 // GetIPInfoIPHub - Function to make IPHub.info API request to get more info on
@@ -93,6 +123,22 @@ func GetIPInfoIPHub(asset string, ipHubAPIKey string) string {
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
 	return string(respBody)
+}
+
+// GetIPInfoScamalytics - Function opens a browser with URL to Scamalytics
+func GetIPInfoScamalytics(asset string) {
+
+	// Open Scamalytics for the given asset in a browser
+	url := ScamalyticsURL + "/" + asset
+	openbrowser(url)
+}
+
+// GetIPInfoIPQualityScore - Function opens a browser with URL to IPInfoIPQualityScore
+func GetIPInfoIPQualityScore(asset string) {
+
+	// Open Scamalytics for the given asset in a browser
+	url := IPQualityScoreURL + "/" + asset
+	openbrowser(url)
 }
 
 // openbrowser - Opens a browser in relevant OS to display URL
@@ -241,8 +287,14 @@ func main() {
 						ipInfo = GetIPInfoIPHub(asset, ipHubKey)
 					} else if methodIP == "whois" {
 						ipInfo = GetWhoIs(asset)
+					} else if methodIP == "ipinfo.io" {
+						ipInfo = GetIPInfoIo(asset)
+					} else if methodIP == "scamalytics" {
+						GetIPInfoScamalytics(asset)
 					} else if methodIP == "alienvault" {
 						ipInfo = GetAlienVaultInfo(asset, "ip")
+					} else if methodIP == "ipqualityscore" {
+						GetIPInfoIPQualityScore(asset)
 					} else {
 						log.Fatalf("Unknown IP method: %s", methodIP)
 					}
