@@ -318,19 +318,22 @@ func main() {
 				// Check the asset type - is it an IP?
 				if IsAssetIP(asset, "") {
 					if methodIP == "iphub" || methodIP == "all" {
-						ipInfo = GetIPInfoIPHub(asset, ipHubKey)
-					} else if methodIP == "whois" || methodIP == "all" {
-						ipInfo = GetWhoIs(asset)
-					} else if methodIP == "ipinfo.io" || methodIP == "all" {
-						ipInfo = GetIPInfoIo(asset)
-					} else if methodIP == "scamalytics" || methodIP == "all" {
+						ipInfo += GetIPInfoIPHub(asset, ipHubKey) + "\n"
+					}
+					if methodIP == "whois" || methodIP == "all" {
+						ipInfo += GetWhoIs(asset) + "\n"
+					}
+					if methodIP == "ipinfo.io" || methodIP == "all" {
+						ipInfo += GetIPInfoIo(asset) + "\n"
+					}
+					if methodIP == "scamalytics" || methodIP == "all" {
 						GetIPInfoScamalytics(asset)
-					} else if methodIP == "alienvault" || methodIP == "all" {
-						ipInfo = GetAlienVaultInfo(asset, "ip")
-					} else if methodIP == "ipqualityscore" || methodIP == "all" {
+					}
+					if methodIP == "alienvault" || methodIP == "all" {
+						ipInfo += GetAlienVaultInfo(asset, "ip") + "\n"
+					}
+					if methodIP == "ipqualityscore" || methodIP == "all" {
 						GetIPInfoIPQualityScore(asset)
-					} else {
-						log.Fatalf("Unknown IP method: %s", methodIP)
 					}
 
 					// Display results to the user
@@ -342,19 +345,21 @@ func main() {
 				} else {
 					// Asset is domain - get asset information appropriately
 					if methodDomain == "whois" || methodDomain == "all" {
-						domainInfo = GetWhoIs(asset)
-					} else if methodDomain == "alienvault" || methodDomain == "all" {
-						domainInfo = GetAlienVaultInfo(asset, "domain")
-					} else if methodDomain == "dnstxt" || methodDomain == "all" {
-						domainInfo = GetDNSTxt(asset)
-					} else if methodDomain == "dnsmx" || methodDomain == "all" {
-						domainInfo = GetDNSMX(asset)
-					} else if methodDomain == "dnsa" ||
+						domainInfo += GetWhoIs(asset) + "\n"
+					}
+					if methodDomain == "alienvault" || methodDomain == "all" {
+						domainInfo += GetAlienVaultInfo(asset, "domain") + "\n"
+					}
+					if methodDomain == "dnstxt" || methodDomain == "all" {
+						domainInfo += GetDNSTxt(asset) + "\n"
+					}
+					if methodDomain == "dnsmx" || methodDomain == "all" {
+						domainInfo += GetDNSMX(asset) + "\n"
+					}
+					if methodDomain == "dnsa" ||
 						methodDomain == "resolve" ||
 						methodDomain == "all" {
-						domainInfo = GetDNSA(asset)
-					} else {
-						log.Fatalf("No support for domain related methods yet")
+						domainInfo += GetDNSA(asset) + "\n"
 					}
 
 					if domainInfo != "" {
