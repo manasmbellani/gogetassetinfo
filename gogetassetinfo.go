@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -22,10 +23,11 @@ const RegexIP = "^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$"
 
 // IPMethods - List of all the methods to apply to IP assets
 var IPMethods []string = []string{"iphub", "whois", "alienvault", "ipinfo.io",
-	"scamalytics", "ipqualityscore"}
+	"scamalytics", "ipqualityscore", "all"}
 
 // DomainMethods - List of all the methods to apply to domain assets
-var DomainMethods []string = []string{"whois", "alienvault"}
+var DomainMethods []string = []string{"whois", "alienvault", "dnstxt", "dnsa",
+	"resolve", "dnsmx", "all"}
 
 // DefUserAgent - Default user agent to use for all web requests
 var DefUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
@@ -71,6 +73,38 @@ func IsAssetIP(asset string, method string) bool {
 
 	found, _ := regexp.MatchString(RegexIP, asset)
 	return found
+}
+
+// GetDNSTxt - Get DNS TXT records about a domain
+func GetDNSTxt(domain string) string {
+	txtout := ""
+	txtrecords, _ := net.LookupTXT(domain)
+	for _, txt := range txtrecords {
+		txtout += string(txt) + "\n"
+	}
+	return txtout
+}
+
+// GetDNSA - Get DNS A record about domain
+func GetDNSA(domain string) string {
+	as, _ := net.LookupIP(domain)
+
+	var ips []string
+	for _, ip := range as {
+		ips = append(ips, ip.String())
+	}
+	return fmt.Sprintf("%s %s", domain, strings.Join(ips, ","))
+
+}
+
+// GetDNSMX - Get DNS MX records about a domain
+func GetDNSMX(domain string) string {
+	mxout := ""
+	mxrecords, _ := net.LookupMX(domain)
+	for _, mx := range mxrecords {
+		mxout += fmt.Sprintf("%s %d", mx.Host, mx.Pref) + "\n"
+	}
+	return mxout
 }
 
 // GetIPInfoIo - Get IP information via ipinfo.io
@@ -237,10 +271,10 @@ func main() {
 		"Number of threads to use. When to set to 1, no concurrency.")
 	methodDomainPtr := flag.String("md", "",
 		"Method to operate on domain to info. Must be one of: "+
-			strings.Join(DomainMethods, ","))
+			strings.Join(DomainMethods, ", "))
 	methodIPPtr := flag.String("mi", "",
 		"Method to operate on IP to get info. Must be one of: "+
-			strings.Join(IPMethods, ","))
+			strings.Join(IPMethods, ", "))
 	ipHubKeyPtr := flag.String("ihk", "",
 		"IPHub Key to use. If '', then read from env var: "+IPHubKeyEnvVar)
 	sleepTimePtr := flag.Int("st", 3,
@@ -283,17 +317,17 @@ func main() {
 
 				// Check the asset type - is it an IP?
 				if IsAssetIP(asset, "") {
-					if methodIP == "iphub" {
+					if methodIP == "iphub" || methodIP == "all" {
 						ipInfo = GetIPInfoIPHub(asset, ipHubKey)
-					} else if methodIP == "whois" {
+					} else if methodIP == "whois" || methodIP == "all" {
 						ipInfo = GetWhoIs(asset)
-					} else if methodIP == "ipinfo.io" {
+					} else if methodIP == "ipinfo.io" || methodIP == "all" {
 						ipInfo = GetIPInfoIo(asset)
-					} else if methodIP == "scamalytics" {
+					} else if methodIP == "scamalytics" || methodIP == "all" {
 						GetIPInfoScamalytics(asset)
-					} else if methodIP == "alienvault" {
+					} else if methodIP == "alienvault" || methodIP == "all" {
 						ipInfo = GetAlienVaultInfo(asset, "ip")
-					} else if methodIP == "ipqualityscore" {
+					} else if methodIP == "ipqualityscore" || methodIP == "all" {
 						GetIPInfoIPQualityScore(asset)
 					} else {
 						log.Fatalf("Unknown IP method: %s", methodIP)
@@ -307,10 +341,18 @@ func main() {
 
 				} else {
 					// Asset is domain - get asset information appropriately
-					if methodDomain == "whois" {
+					if methodDomain == "whois" || methodDomain == "all" {
 						domainInfo = GetWhoIs(asset)
-					} else if methodDomain == "alienvault" {
+					} else if methodDomain == "alienvault" || methodDomain == "all" {
 						domainInfo = GetAlienVaultInfo(asset, "domain")
+					} else if methodDomain == "dnstxt" || methodDomain == "all" {
+						domainInfo = GetDNSTxt(asset)
+					} else if methodDomain == "dnsmx" || methodDomain == "all" {
+						domainInfo = GetDNSMX(asset)
+					} else if methodDomain == "dnsa" ||
+						methodDomain == "resolve" ||
+						methodDomain == "all" {
+						domainInfo = GetDNSA(asset)
 					} else {
 						log.Fatalf("No support for domain related methods yet")
 					}

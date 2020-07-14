@@ -16,8 +16,15 @@ go get -u github.com/manasmbellani/gogetassetinfo
 * ipinfo.io - Provides info about an IP via `https://ipinfo.io`
 * Scamalytics - Provides reputation about an IP via the scamalytics.com website
 * IPQualityScore.com - provides reputation about an IP via the ipqualityscore.com website
+* DNS Resolutions - provide DNS A, TXT, MX DNS resolution for domains
 
 ## Usage
+
+### Using ALL checks
+To run all the checks on IPs/domains from file `assets.txt` listed below:- 
+```
+cat assets.txt | go run gogetassetinfo.go -md all -mi all
+```
 
 ### Using IPHub
 For IPHub.io, an API key is required which can be either: -
@@ -63,4 +70,17 @@ echo -e "1.1.1.1\n2.2.2.2" | go run gogetassetinfo.go  -mi ipqualityscore
 To get the info about the IP via ipinfo.io:-
 ```
 echo -e "1.1.1.1\n2.2.2.2" | go run gogetassetinfo.go  -mi ipinfo.io
+```
+
+### Using DNS Resolutions 
+To get the DNS resolutions for MX, DNS, A records for a domain
+```
+# A record
+cat domains.txt | go run gogetassetinfo.go -md dnsa 
+
+# TXT record
+cat domains.txt | go run gogetassetinfo.go -md dnstxt
+
+# MX record
+cat domains.txt | go run gogetassetinfo.go -md dnsmx 
 ```
