@@ -137,7 +137,7 @@ func main() {
 
 					// Display results to the user
 					if ipInfo != "" {
-						log.Printf("Info on IP: %s via method: %s\n%s\n\n", asset,
+						fmt.Printf("Info on IP: %s via method: %s\n%s\n\n", asset,
 							methodIP, ipInfo)
 					}
 
