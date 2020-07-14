@@ -6,7 +6,7 @@ Currently, results are printed directly to the output, and the raw results are d
 ## Setup
 To install the script in `$GOPATH`, simply run:
 ```
-go install gogetassetinfo.go
+go get -u github.com/manasmbellani/gogetassetinfo
 ```
 
 ## Supported API Sources
@@ -38,7 +38,7 @@ More info about the API is available `here`: https://iphub.info/api
 ### Using whois
 To get the WhoIs information about given domain/IP: -
 ```
-echo -e "1.1.1.1\n2.2.2.2" | go run gogetassetinfo.go  -mi whois | tee /tmp/results.txt
+echo -e "1.1.1.1\n2.2.2.2\ngoogle.com" | go run gogetassetinfo.go  -md whois -mi whois | tee /tmp/results.txt
 ```
 
 ### Using Alienvault
