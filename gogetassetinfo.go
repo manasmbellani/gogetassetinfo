@@ -58,7 +58,7 @@ const IPHubKeyEnvVar = "IPHUB_KEY"
 const IPHubAPIURL = "https://v2.api.iphub.info"
 
 // ScamalyticsURL - The URL for Scamalytics
-const ScamalyticsURL = "https://scamalytics.com/ip/"
+const ScamalyticsURL = "https://scamalytics.com/ip"
 
 // IPInfoAPIURL - The URL for ipinfo.io
 const IPInfoAPIURL = "https://ipinfo.io"
