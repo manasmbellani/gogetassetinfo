@@ -3,6 +3,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -21,9 +22,21 @@ import (
 // RegexIP - Regex to identify an IP address
 const RegexIP = "^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$"
 
+// RegexDomain - Regex to identify domain addr
+const RegexDomain = "^[a-zA-Z0-9_\\.\\-]+\\.[a-zA-Z0-9]{1,6}$"
+
+// RegexMD5 - Regex to identify MD5
+const RegexMD5 = "^[a-fA-F0-9]{32}$"
+
+// RegexSHA1 - Regex to identify SHA-1
+const RegexSHA1 = "^[a-fA-F0-9]{40}$"
+
+// RegexSHA256 - Regex to identify SHA256
+const RegexSHA256 = "^[a-fA-F0-9]{64}$"
+
 // IPMethods - List of all the methods to apply to IP assets
 var IPMethods []string = []string{"iphub", "whois", "alienvault", "ipinfo.io",
-	"scamalytics", "ipqualityscore", "all"}
+	"scamalytics", "ipqualityscore", "dnsptr", "all"}
 
 // DomainMethods - List of all the methods to apply to domain assets
 var DomainMethods []string = []string{"whois", "alienvault", "dnstxt", "dnsa",
@@ -50,6 +63,9 @@ const ScamalyticsURL = "https://scamalytics.com/ip/"
 // IPInfoAPIURL - The URL for ipinfo.io
 const IPInfoAPIURL = "https://ipinfo.io"
 
+// VirusTotalURL - The URL for Virustotal submission
+const VirusTotalURL = "https://www.virustotal.com/gui/{assetType}/{asset}/detection"
+
 // IPQualityScoreURL - URL for the IP Quality Score website
 const IPQualityScoreURL = "https://www.ipqualityscore.com/free-ip-lookup-proxy-vpn-test/lookup"
 
@@ -65,14 +81,37 @@ const AlienVaultIPv6Sections = "general,reputation,geo,malware,url_list,passive_
 // AlienVaultDomainSections - sections to get for domain from AlienVault
 const AlienVaultDomainSections = "general,geo,malware,url_list,whois,passive_dns"
 
-// IsAssetIP - Check if the supplied asset is an IP address?
-func IsAssetIP(asset string, method string) bool {
-	if method == "" {
-		method = "regex"
+// GetAssetType - Get the type of asset e.g ipv4, domain, md5, sha1, sha256
+// or unknown
+func GetAssetType(asset string) string {
+	matched := false
+
+	matched, _ = regexp.MatchString(RegexIP, asset)
+	if matched {
+		return "ipv4"
 	}
 
-	found, _ := regexp.MatchString(RegexIP, asset)
-	return found
+	matched, _ = regexp.MatchString(RegexDomain, asset)
+	if matched {
+		return "domain"
+	}
+
+	matched, _ = regexp.MatchString(RegexMD5, asset)
+	if matched {
+		return "md5"
+	}
+
+	matched, _ = regexp.MatchString(RegexSHA1, asset)
+	if matched {
+		return "sha1"
+	}
+
+	matched, _ = regexp.MatchString(RegexSHA256, asset)
+	if matched {
+		return "sha256"
+	}
+
+	return "unknown"
 }
 
 // GetDNSTxt - Get DNS TXT records about a domain
@@ -233,6 +272,46 @@ func GetWhoIs(asset string) string {
 	return execCmd(cmdToExec)
 }
 
+// GetDNSPtr - Get the PTR value for IP address
+func GetDNSPtr(ipaddr string) string {
+	hostname := ""
+
+	const timeout = 10 * time.Millisecond
+	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
+	defer cancel() // important to avoid a resource leak
+
+	var r net.Resolver
+	names, err := r.LookupAddr(ctx, ipaddr)
+	if err == nil && len(names) > 0 {
+		hostname = names[0] // hostname
+	}
+
+	ipAddrToHostname := fmt.Sprintf("%s --> %s\n", ipaddr, hostname)
+	return ipAddrToHostname
+}
+
+// GetVirustotalInfo - Perform Virustotal Search within the browser
+func GetVirustotalInfo(asset string, assetType string) {
+	// Get the specific asset type to supply in Virustotal
+	vtAssetType := ""
+	if assetType == "ipv4" {
+		vtAssetType = "ip-address"
+	} else if assetType == "domain" {
+		vtAssetType = "domain"
+	} else if assetType == "url" {
+		vtAssetType = "url"
+	} else {
+		log.Printf("Unknown VT asset type: %s, asset: %s", assetType, asset)
+	}
+
+	// Build the VirusTotal URL
+	vtURL := strings.ReplaceAll(VirusTotalURL, "{assetType}", vtAssetType)
+	vtURL = strings.ReplaceAll(vtURL, "{asset}", asset)
+
+	// Open the VirusTotal URL in browser
+	openbrowser(vtURL)
+}
+
 // GetAlienVaultInfo - Get the alienvault information for asset (IP/IPv4, domain)
 func GetAlienVaultInfo(asset string, assetType string) string {
 
@@ -273,6 +352,12 @@ func GetAlienVaultInfo(asset string, assetType string) string {
 	}
 
 	return out
+}
+
+// displayProgress - Returns a statement to display progress, as test is conducted
+func displayProgress(assetType string, asset string, methodname string) string {
+	return fmt.Sprintf("[*] Getting info on %s: %s via '%s'\n", assetType, asset,
+		methodname)
 }
 
 func main() {
@@ -324,29 +409,43 @@ func main() {
 				// let user know that we are getting info on asset
 				log.Printf("Getting info on asset: %s", asset)
 
+				// Get the Asset Type e.g. ipv4, domain
+				assetType := GetAssetType(asset)
+
 				// Check the asset type - is it an IP?
-				if IsAssetIP(asset, "") {
+				if assetType == "ipv4" {
 					if methodIP == "iphub" || methodIP == "all" {
+						ipInfo += displayProgress(assetType, asset, "iphub")
 						ipInfo += GetIPInfoIPHub(asset, ipHubKey) + "\n\n"
 					}
 					if methodIP == "whois" || methodIP == "all" {
+						ipInfo += displayProgress(assetType, asset, "whois")
 						ipInfo += GetWhoIs(asset) + "\n\n"
 					}
 					if methodIP == "ipinfo.io" || methodIP == "all" {
+						ipInfo += displayProgress(assetType, asset, "ipinfo.io")
 						ipInfo += GetIPInfoIo(asset) + "\n\n"
 					}
 					if methodIP == "scamalytics" || methodIP == "all" {
+						ipInfo += displayProgress(assetType, asset, "scamalytics")
 						GetIPInfoScamalytics(asset)
 					}
 					if methodIP == "alienvault" || methodIP == "all" {
+						ipInfo += displayProgress(assetType, asset, "alienvault")
 						ipInfo += GetAlienVaultInfo(asset, "ip") + "\n\n"
 					}
 					if methodIP == "ipqualityscore" || methodIP == "all" {
+						ipInfo += displayProgress(assetType, asset, "ipqualityscore")
 						GetIPInfoIPQualityScore(asset)
 					}
-					//if methodIP == "dnsptr" || methodIP == "all" {
-					//	Get(asset)
-					//}
+					if methodIP == "virustotal" || methodIP == "all" {
+						ipInfo += displayProgress(assetType, asset, "virustotal")
+						GetVirustotalInfo(asset, assetType)
+					}
+					if methodIP == "dnsptr" || methodIP == "all" {
+						ipInfo += displayProgress(assetType, asset, "dnsptr")
+						ipInfo += GetDNSPtr(asset)
+					}
 
 					// Display results to the user
 					if ipInfo != "" {
@@ -354,23 +453,32 @@ func main() {
 							methodIP, ipInfo)
 					}
 
-				} else {
+				} else if assetType == "domain" {
 					// Asset is domain - get asset information appropriately
 					if methodDomain == "whois" || methodDomain == "all" {
+						domainInfo += displayProgress(assetType, asset, "whois")
 						domainInfo += GetWhoIs(asset) + "\n\n"
 					}
 					if methodDomain == "alienvault" || methodDomain == "all" {
+						domainInfo += displayProgress(assetType, asset, "alienvault")
 						domainInfo += GetAlienVaultInfo(asset, "domain") + "\n\n"
 					}
 					if methodDomain == "dnstxt" || methodDomain == "all" {
+						domainInfo += displayProgress(assetType, asset, "dnstxt")
 						domainInfo += GetDNSTxt(asset) + "\n\n"
 					}
 					if methodDomain == "dnsmx" || methodDomain == "all" {
+						domainInfo += displayProgress(assetType, asset, "dnsmx")
 						domainInfo += GetDNSMX(asset) + "\n\n"
+					}
+					if methodDomain == "virustotal" || methodDomain == "all" {
+						domainInfo += displayProgress(assetType, asset, "virustotal")
+						GetVirustotalInfo(asset, assetType)
 					}
 					if methodDomain == "dnsa" ||
 						methodDomain == "resolve" ||
 						methodDomain == "all" {
+						domainInfo += displayProgress(assetType, asset, "dnsa")
 						domainInfo += GetDNSA(asset) + "\n\n"
 					}
 
@@ -378,6 +486,9 @@ func main() {
 						fmt.Printf("[+] Info on domain: %s via method: %s\n%s\n\n", asset,
 							methodDomain, domainInfo)
 					}
+				} else {
+					log.Printf("Unknown asset type: %s for asset: %s",
+						assetType, asset)
 				}
 
 				// Sleep for a few seconds before making next request

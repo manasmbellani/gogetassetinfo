@@ -16,7 +16,8 @@ go get -u github.com/manasmbellani/gogetassetinfo
 * ipinfo.io - Provides info about an IP via `https://ipinfo.io`
 * Scamalytics - Provides reputation about an IP via the scamalytics.com website
 * IPQualityScore.com - provides reputation about an IP via the ipqualityscore.com website
-* DNS Resolutions - provide DNS A, TXT, MX DNS resolution for domains
+* DNS Resolutions - provide DNS A, DNS TXT, DNS MX,  resolution for domains and DNS PTR for IP addresses
+* Virustotal - Perform Virustotal search within browser on IPs, domains
 
 ## Usage
 
@@ -83,6 +84,12 @@ cat domains.txt | go run gogetassetinfo.go -md dnstxt
 
 # MX record
 cat domains.txt | go run gogetassetinfo.go -md dnsmx 
+```
+
+For IP addresses, it is possible to get Reverse PTR record:
+```
+# PTR Records for IPs
+cat ips.txt | go run gogetassetinfo.go -mi dnsptr
 ```
 
 ### TODO:
