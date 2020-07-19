@@ -197,7 +197,16 @@ func openbrowser(url string) {
 
 // execCmd - Execute command via shell and return the output
 func execCmd(cmdToExec string) string {
-	cmd := exec.Command("/bin/bash", "-c", cmdToExec)
+
+	// Determine the command to execute based on OS
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "windows":
+		cmd = exec.Command("cmd.exe", "/c", cmdToExec)
+	default:
+		cmd = exec.Command("/bin/sh", "-c", cmdToExec)
+	}
+
 	out, err := cmd.CombinedOutput()
 	outStr := ""
 	errStr := ""
@@ -318,23 +327,26 @@ func main() {
 				// Check the asset type - is it an IP?
 				if IsAssetIP(asset, "") {
 					if methodIP == "iphub" || methodIP == "all" {
-						ipInfo += GetIPInfoIPHub(asset, ipHubKey) + "\n"
+						ipInfo += GetIPInfoIPHub(asset, ipHubKey) + "\n\n"
 					}
 					if methodIP == "whois" || methodIP == "all" {
-						ipInfo += GetWhoIs(asset) + "\n"
+						ipInfo += GetWhoIs(asset) + "\n\n"
 					}
 					if methodIP == "ipinfo.io" || methodIP == "all" {
-						ipInfo += GetIPInfoIo(asset) + "\n"
+						ipInfo += GetIPInfoIo(asset) + "\n\n"
 					}
 					if methodIP == "scamalytics" || methodIP == "all" {
 						GetIPInfoScamalytics(asset)
 					}
 					if methodIP == "alienvault" || methodIP == "all" {
-						ipInfo += GetAlienVaultInfo(asset, "ip") + "\n"
+						ipInfo += GetAlienVaultInfo(asset, "ip") + "\n\n"
 					}
 					if methodIP == "ipqualityscore" || methodIP == "all" {
 						GetIPInfoIPQualityScore(asset)
 					}
+					//if methodIP == "dnsptr" || methodIP == "all" {
+					//	Get(asset)
+					//}
 
 					// Display results to the user
 					if ipInfo != "" {
@@ -345,21 +357,21 @@ func main() {
 				} else {
 					// Asset is domain - get asset information appropriately
 					if methodDomain == "whois" || methodDomain == "all" {
-						domainInfo += GetWhoIs(asset) + "\n"
+						domainInfo += GetWhoIs(asset) + "\n\n"
 					}
 					if methodDomain == "alienvault" || methodDomain == "all" {
-						domainInfo += GetAlienVaultInfo(asset, "domain") + "\n"
+						domainInfo += GetAlienVaultInfo(asset, "domain") + "\n\n"
 					}
 					if methodDomain == "dnstxt" || methodDomain == "all" {
-						domainInfo += GetDNSTxt(asset) + "\n"
+						domainInfo += GetDNSTxt(asset) + "\n\n"
 					}
 					if methodDomain == "dnsmx" || methodDomain == "all" {
-						domainInfo += GetDNSMX(asset) + "\n"
+						domainInfo += GetDNSMX(asset) + "\n\n"
 					}
 					if methodDomain == "dnsa" ||
 						methodDomain == "resolve" ||
 						methodDomain == "all" {
-						domainInfo += GetDNSA(asset) + "\n"
+						domainInfo += GetDNSA(asset) + "\n\n"
 					}
 
 					if domainInfo != "" {
