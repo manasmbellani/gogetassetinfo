@@ -502,7 +502,7 @@ func main() {
 	// Read assets to process from STDIN input
 	sc := bufio.NewScanner(os.Stdin)
 	for sc.Scan() {
-		line := sc.Text()
+		line := strings.TrimSpace(sc.Text())
 		if line != "" {
 			assets <- line
 		}
