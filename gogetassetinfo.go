@@ -36,7 +36,7 @@ const RegexSHA256 = "^[a-fA-F0-9]{64}$"
 
 // IPMethods - List of all the methods to apply to IP assets
 var IPMethods []string = []string{"iphub", "whois", "alienvault", "ipinfo.io",
-	"scamalytics", "ipqualityscore", "dnsptr", "all"}
+	"scamalytics", "ipqualityscore", "dnsptr", "googlevpncheck", "all"}
 
 // DomainMethods - List of all the methods to apply to domain assets
 var DomainMethods []string = []string{"whois", "alienvault", "dnstxt", "dnsa",
@@ -62,6 +62,9 @@ const ScamalyticsURL = "https://scamalytics.com/ip"
 
 // IPInfoAPIURL - The URL for ipinfo.io
 const IPInfoAPIURL = "https://ipinfo.io"
+
+// GoogleSearchURL - Ability to search URL being VPN via Google Search
+const GoogleSearchURL = "https://www.google.com/search?q="
 
 // VirusTotalURL - The URL for Virustotal submission
 const VirusTotalURL = "https://www.virustotal.com/gui/{assetType}/{asset}/detection"
@@ -203,6 +206,13 @@ func GetIPInfoScamalytics(asset string) {
 
 	// Open Scamalytics for the given asset in a browser
 	url := ScamalyticsURL + "/" + asset
+	openbrowser(url)
+}
+
+// GetIPVPNInfo - Function to detect if IP might be a VPN via google search
+func GetIPVPNInfo(asset string) {
+	// Open Google Search
+	url := fmt.Sprintf(GoogleSearchURL+"%s+vpn", asset)
 	openbrowser(url)
 }
 
@@ -461,6 +471,10 @@ func main() {
 					if shouldExecMethod(methodIP, "virustotal") {
 						ipInfo += displayProgress(assetType, asset, "virustotal")
 						GetVirustotalInfo(asset, assetType)
+					}
+					if shouldExecMethod(methodIP, "googlevpncheck") {
+						ipInfo += displayProgress(assetType, asset, "googlevpncheck")
+						GetIPVPNInfo(asset)
 					}
 					if shouldExecMethod(methodIP, "dnsptr") {
 						ipInfo += displayProgress(assetType, asset, "dnsptr")
