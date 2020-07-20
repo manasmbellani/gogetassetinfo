@@ -360,6 +360,26 @@ func displayProgress(assetType string, asset string, methodname string) string {
 		methodname)
 }
 
+// shouldExecMethod - Determine if method should be executed depending
+// on comma-sep list of methods to exec provided by user
+func shouldExecMethod(methodsToExec string, methodID string) bool {
+	shouldExecMethodFlag := false
+
+	// Get list of all methods to execute
+	methodsToExecList := strings.Split(methodsToExec, ",")
+
+	// Check if any of the methods provided by user contains 'all' OR
+	// our ID of our method to execute
+	for _, method := range methodsToExecList {
+		if method == methodID || method == "all" {
+			shouldExecMethodFlag = true
+			break
+		}
+	}
+
+	return shouldExecMethodFlag
+}
+
 func main() {
 	threadsPtr := flag.Int("t", 1,
 		"Number of threads to use. When to set to 1, no concurrency.")
@@ -414,35 +434,35 @@ func main() {
 
 				// Check the asset type - is it an IP?
 				if assetType == "ipv4" {
-					if methodIP == "iphub" || methodIP == "all" {
+					if shouldExecMethod(methodIP, "iphub") {
 						ipInfo += displayProgress(assetType, asset, "iphub")
 						ipInfo += GetIPInfoIPHub(asset, ipHubKey) + "\n\n"
 					}
-					if methodIP == "whois" || methodIP == "all" {
+					if shouldExecMethod(methodIP, "whois") {
 						ipInfo += displayProgress(assetType, asset, "whois")
 						ipInfo += GetWhoIs(asset) + "\n\n"
 					}
-					if methodIP == "ipinfo.io" || methodIP == "all" {
+					if shouldExecMethod(methodIP, "ipinfo.io") {
 						ipInfo += displayProgress(assetType, asset, "ipinfo.io")
 						ipInfo += GetIPInfoIo(asset) + "\n\n"
 					}
-					if methodIP == "scamalytics" || methodIP == "all" {
+					if shouldExecMethod(methodIP, "scamalytics") {
 						ipInfo += displayProgress(assetType, asset, "scamalytics")
 						GetIPInfoScamalytics(asset)
 					}
-					if methodIP == "alienvault" || methodIP == "all" {
+					if shouldExecMethod(methodIP, "alienvault") {
 						ipInfo += displayProgress(assetType, asset, "alienvault")
 						ipInfo += GetAlienVaultInfo(asset, "ip") + "\n\n"
 					}
-					if methodIP == "ipqualityscore" || methodIP == "all" {
+					if shouldExecMethod(methodIP, "ipqualityscore") {
 						ipInfo += displayProgress(assetType, asset, "ipqualityscore")
 						GetIPInfoIPQualityScore(asset)
 					}
-					if methodIP == "virustotal" || methodIP == "all" {
+					if shouldExecMethod(methodIP, "virustotal") {
 						ipInfo += displayProgress(assetType, asset, "virustotal")
 						GetVirustotalInfo(asset, assetType)
 					}
-					if methodIP == "dnsptr" || methodIP == "all" {
+					if shouldExecMethod(methodIP, "dnsptr") {
 						ipInfo += displayProgress(assetType, asset, "dnsptr")
 						ipInfo += GetDNSPtr(asset)
 					}
@@ -455,29 +475,28 @@ func main() {
 
 				} else if assetType == "domain" {
 					// Asset is domain - get asset information appropriately
-					if methodDomain == "whois" || methodDomain == "all" {
+					if shouldExecMethod(methodDomain, "whois") {
 						domainInfo += displayProgress(assetType, asset, "whois")
 						domainInfo += GetWhoIs(asset) + "\n\n"
 					}
-					if methodDomain == "alienvault" || methodDomain == "all" {
+					if shouldExecMethod(methodDomain, "alienvault") {
 						domainInfo += displayProgress(assetType, asset, "alienvault")
 						domainInfo += GetAlienVaultInfo(asset, "domain") + "\n\n"
 					}
-					if methodDomain == "dnstxt" || methodDomain == "all" {
+					if shouldExecMethod(methodDomain, "dnstxt") {
 						domainInfo += displayProgress(assetType, asset, "dnstxt")
 						domainInfo += GetDNSTxt(asset) + "\n\n"
 					}
-					if methodDomain == "dnsmx" || methodDomain == "all" {
+					if shouldExecMethod(methodDomain, "dnsmx") {
 						domainInfo += displayProgress(assetType, asset, "dnsmx")
 						domainInfo += GetDNSMX(asset) + "\n\n"
 					}
-					if methodDomain == "virustotal" || methodDomain == "all" {
+					if shouldExecMethod(methodDomain, "virustotal") {
 						domainInfo += displayProgress(assetType, asset, "virustotal")
 						GetVirustotalInfo(asset, assetType)
 					}
-					if methodDomain == "dnsa" ||
-						methodDomain == "resolve" ||
-						methodDomain == "all" {
+					if shouldExecMethod(methodDomain, "dnsa") ||
+						shouldExecMethod(methodDomain, "resolve") {
 						domainInfo += displayProgress(assetType, asset, "dnsa")
 						domainInfo += GetDNSA(asset) + "\n\n"
 					}
