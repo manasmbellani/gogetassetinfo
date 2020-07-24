@@ -447,9 +447,9 @@ func main() {
 					if shouldExecMethod(methodIP, "iphub") {
 						ipInfo += displayProgress(assetType, asset, "iphub")
 						ipInfo += "Review the 'block' value, where:\n"
-						ipInfo += "    block:0 - Residential or Business IP\n"
-						ipInfo += "    block:1 - Non-residential IP\n"
-						ipInfo += "    block:2 - Unkown (could be residential OR non-residential)\n\n"
+						ipInfo += "    block:0 - Residential or Business IP (Legit IP)\n"
+						ipInfo += "    block:1 - Non-residential IP (Suspicious IP!)\n"
+						ipInfo += "    block:2 - Unknown (could be residential OR non-residential)\n\n"
 						ipInfo += GetIPInfoIPHub(asset, ipHubKey) + "\n\n"
 					}
 					if shouldExecMethod(methodIP, "whois") {
