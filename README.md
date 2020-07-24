@@ -10,7 +10,7 @@ go get -u github.com/manasmbellani/gogetassetinfo
 ```
 
 ## Supported API Sources
-* IPHub.info - API which provides IP types (residential/proxy) for various ip addresses
+* IPHub.info - API which provides IP types (residential (response: 0)/ proxy (response: 1) / unknown (response: 2)) for various ip addresses
 * WhoIs - Provide Whois info on domain/IP
 * Alienvault - Provide Alienvault pulse info in raw format.
 * ipinfo.io - Provides info about an IP via `https://ipinfo.io`
@@ -31,6 +31,13 @@ cat assets.txt | go run gogetassetinfo.go -md all -mi all
 For IPHub.io, an API key is required which can be either: -
 * configured in the environment variable `IPHUB_KEY`, Or
 * provided as an input argument `-ihk`
+
+IPHub API can inform us whether an API is:
+* block: 0 - Residential or business IP (i.e. safe IP)
+
+* block: 1 - Non-residential IP (hosting provider, proxy, etc.)
+
+* block: 2 - Non-residential & residential IP (warning, may flag innocent people)
 
 To get information about given IPs in file `/tmp/ips.txt`:-
 ```
