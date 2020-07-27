@@ -10,6 +10,10 @@ To install the script in `$GOPATH`, simply run: -
 go get -u github.com/manasmbellani/gogetassetinfo
 ```
 
+For `whois` module, the whois command should be either accessible within `$PATH` 
+variable OR the whois binary should be available in the same folder as the location
+of the `gogetassetinfo` binary.
+
 ## Supported API Sources
 * Alienvault - Provide Alienvault pulse info in raw format.
 * DNS Resolutions - provide DNS A, DNS TXT, DNS MX, resolution for domains and DNS PTR for IP addresses
