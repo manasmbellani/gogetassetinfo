@@ -35,12 +35,12 @@ const RegexSHA1 = "^[a-fA-F0-9]{40}$"
 const RegexSHA256 = "^[a-fA-F0-9]{64}$"
 
 // IPMethods - List of all the methods to apply to IP assets
-var IPMethods []string = []string{"iphub", "whois", "alienvault", "ipinfo.io",
-	"scamalytics", "ipqualityscore", "dnsptr", "googlevpncheck", "all"}
+var IPMethods []string = []string{"dnsptr", "iphub", "whois", "alienvault", "googlevpncheck", "ipinfo.io",
+	"ipqualityscore", "scamalytics", "virustotal", "all"}
 
 // DomainMethods - List of all the methods to apply to domain assets
-var DomainMethods []string = []string{"whois", "alienvault", "dnstxt", "dnsa",
-	"resolve", "dnsmx", "all"}
+var DomainMethods []string = []string{"whois", "alienvault", "dnsmx", "dnstxt", "dnsa",
+	"resolve", "virustotal", "all"}
 
 // DefUserAgent - Default user agent to use for all web requests
 var DefUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"

@@ -4,20 +4,22 @@ Golang script that acts as a wrapper to get Reputation/information about domains
 Currently, results are printed directly to the output, and the raw results are displayed to the output.
 
 ## Setup
-To install the script in `$GOPATH`, simply run:
+To install the script in `$GOPATH`, simply run: -
+
 ```
 go get -u github.com/manasmbellani/gogetassetinfo
 ```
 
 ## Supported API Sources
-* IPHub.info - API which provides IP types (residential (response: 0)/ proxy (response: 1) / unknown (response: 2)) for various ip addresses
-* WhoIs - Provide Whois info on domain/IP
 * Alienvault - Provide Alienvault pulse info in raw format.
-* ipinfo.io - Provides info about an IP via `https://ipinfo.io`
+* DNS Resolutions - provide DNS A, DNS TXT, DNS MX, resolution for domains and DNS PTR for IP addresses
+* Google VPN Check - Perform a search to confirm if IP could belong to a VPN by performing a google search
+* IpInfo.io - Provides info about an IP via `https://ipinfo.io`
+* IPHub.info - API which provides IP types (residential (response: 0)/ proxy (response: 1) / unknown (response: 2)) for various ip addresses
 * Scamalytics - Provides reputation about an IP via the scamalytics.com website
 * IPQualityScore.com - provides reputation about an IP via the ipqualityscore.com website
-* DNS Resolutions - provide DNS A, DNS TXT, DNS MX,  resolution for domains and DNS PTR for IP addresses
 * Virustotal - Perform Virustotal search within browser on IPs, domains
+* WhoIs - Provide Whois info on domain/IP
 
 ## Usage
 
@@ -81,10 +83,11 @@ echo -e "1.1.1.1\n2.2.2.2" | go run gogetassetinfo.go  -mi ipinfo.io
 ```
 
 ### Using DNS Resolutions 
-To get the DNS resolutions for MX, DNS, A records for domains listed in file `domains.txt`
+To get the DNS resolutions for MX, DNS, A records for domains listed in file `domains.txt` : -
 ```
 # A record
 cat domains.txt | go run gogetassetinfo.go -md dnsa 
+cat domains.txt | go run gogetassetinfo.go -md resolve 
 
 # TXT record
 cat domains.txt | go run gogetassetinfo.go -md dnstxt
@@ -99,15 +102,35 @@ For IP addresses, it is possible to get Reverse PTR record:
 cat ips.txt | go run gogetassetinfo.go -mi dnsptr
 ```
 
-### TODO:
-#### URL
-* Check Phishtank status for a URL
-* Get ALL URL redirections
-* Get response headers in the URL
-* Get Virustotal IOC for a URL
+### Using Virustotal
+To get the information about the domain OR IP via Virustotal in a browser, use 
+the following command: -
 
-#### Domain 
-* Get Virustotal IOC for a domain
+```
+# Virustotal for IP
+cat ips.txt | go run gogetassetinfo.go -mi virustotal
+
+# Virustotal for Domain
+cat ips.txt | go run gogetassetinfo.go -md virustotal
+```
+
+### Performing Google VPN Check
+To get an indication which VPN an IP may belong to, you can run the GoogleVPNCheck
+module which will perform a search in browser to confirm whether an IP may be 
+part of VPN.
+
+```
+# Google VPN Check for IP
+cat ips.txt | go run gogetassetinfo.go -mi googlevpncheck
+```
+
+### TODO
+
+#### URL
+- [ ] Check Phishtank status for a URL
+- [ ] Get ALL URL redirections
+- [ ] Get response headers in the URL
+- [*] Check IOC in Virustotal
 
 #### IP
-* Open IP in Shodan
+- [ ] Open IP in Shodan
