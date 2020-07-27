@@ -127,10 +127,10 @@ cat ips.txt | go run gogetassetinfo.go -mi googlevpncheck
 ### TODO
 
 #### URL
-- [ ] Check Phishtank status for a URL
-- [ ] Get ALL URL redirections
-- [ ] Get response headers in the URL
-- [*] Check IOC in Virustotal
+[ ] Check Phishtank status for a URL
+[ ] Get ALL URL redirections
+[ ] Get response headers in the URL
+[*] Check IOC in Virustotal
 
 #### IP
 - [ ] Open IP in Shodan
