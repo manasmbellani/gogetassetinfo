@@ -22,6 +22,7 @@ of the `gogetassetinfo` binary.
 * IPHub.info - API which provides IP types (residential (response: 0)/ proxy (response: 1) / unknown (response: 2)) for various ip addresses
 * Scamalytics - Provides reputation about an IP via the scamalytics.com website
 * IPQualityScore.com - provides reputation about an IP via the ipqualityscore.com website
+* Shodan - provides info about an IP in browser via Shodan itself.
 * Virustotal - Perform Virustotal search within browser on IPs, domains
 * WhoIs - Provide Whois info on domain/IP
 
@@ -128,14 +129,16 @@ part of VPN.
 cat ips.txt | go run gogetassetinfo.go -mi googlevpncheck
 ```
 
+### Using Shodan
+To get info about IP in Shodan.io
+
+```
+cat ips.txt | go run gogetassetinfo.go -mi shodan
+```
+
 ### TODO
 
 #### URL
 - [ ] Check Phishtank status for a URL
 - [ ] Get ALL URL redirections
 - [ ] Get response headers in the URL
-- [x] Check IOC in Virustotal
-
-#### IP
-- [ ] Open IP in Shodan
-- [x] Check IOC in Virustotal

@@ -36,7 +36,7 @@ const RegexSHA256 = "^[a-fA-F0-9]{64}$"
 
 // IPMethods - List of all the methods to apply to IP assets
 var IPMethods []string = []string{"dnsptr", "iphub", "whois", "alienvault", "googlevpncheck", "ipinfo.io",
-	"ipqualityscore", "scamalytics", "virustotal", "all"}
+	"ipqualityscore", "shodan", "scamalytics", "virustotal", "all"}
 
 // DomainMethods - List of all the methods to apply to domain assets
 var DomainMethods []string = []string{"whois", "alienvault", "dnsmx", "dnstxt", "dnsa",
@@ -74,6 +74,9 @@ const IPQualityScoreURL = "https://www.ipqualityscore.com/free-ip-lookup-proxy-v
 
 // AlienVaultIndicatorURL - the URL to get the Alienvault indicators
 const AlienVaultIndicatorURL = "https://otx.alienvault.com/api/v1/indicators"
+
+// ShodanURL - the URL to get the info about the IP from
+const ShodanURL = "https://www.shodan.io/host/"
 
 // AlienVaultIPv4Sections - sections to get for IPv4 from AlienVault
 const AlienVaultIPv4Sections = "general,reputation,geo,malware,url_list,passive_dns,http_scans"
@@ -206,6 +209,13 @@ func GetIPInfoScamalytics(asset string) {
 
 	// Open Scamalytics for the given asset in a browser
 	url := ScamalyticsURL + "/" + asset
+	openbrowser(url)
+}
+
+// GetIPInfoShodanIo - Function to open browser to get info about the IP via
+// Shodan.io
+func GetIPInfoShodanIo(asset string) {
+	url := ShodanURL + "/" + asset
 	openbrowser(url)
 }
 
@@ -459,6 +469,10 @@ func main() {
 					if shouldExecMethod(methodIP, "ipinfo.io") {
 						ipInfo += displayProgress(assetType, asset, "ipinfo.io")
 						ipInfo += GetIPInfoIo(asset) + "\n\n"
+					}
+					if shouldExecMethod(methodIP, "shodan") {
+						ipInfo += displayProgress(assetType, asset, "shodan")
+						GetIPInfoShodanIo(asset)
 					}
 					if shouldExecMethod(methodIP, "scamalytics") {
 						ipInfo += displayProgress(assetType, asset, "scamalytics")
