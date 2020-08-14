@@ -40,7 +40,7 @@ var IPMethods []string = []string{"dnsptr", "iphub", "whois", "alienvault", "goo
 
 // DomainMethods - List of all the methods to apply to domain assets
 var DomainMethods []string = []string{"whois", "alienvault", "dnsmx", "dnstxt", "dnsa",
-	"resolve", "virustotal", "all"}
+	"resolve", "virustotal", "urlscan.io", "phishtank", "all"}
 
 // DefUserAgent - Default user agent to use for all web requests
 var DefUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
@@ -54,8 +54,14 @@ const DefMethodIP = "iphub"
 // IPHubKeyEnvVar - IPHub Key environment variable
 const IPHubKeyEnvVar = "IPHUB_KEY"
 
+// URLScanIOURL - URLScan.io URL accessible
+const URLScanIOURL = "https://urlscan.io/"
+
 // IPHubAPIURL - The URL for IPHub API to send request for getting info on IP
 const IPHubAPIURL = "https://v2.api.iphub.info"
+
+// PhishtankURL - The URL of Phishtank
+const PhishtankURL = "https://www.phishtank.com/"
 
 // ScamalyticsURL - The URL for Scamalytics
 const ScamalyticsURL = "https://scamalytics.com/ip"
@@ -210,6 +216,29 @@ func GetIPInfoScamalytics(asset string) {
 	// Open Scamalytics for the given asset in a browser
 	url := ScamalyticsURL + "/" + asset
 	openbrowser(url)
+}
+
+// GetURLInfoURLScanIo - Open urlscan.io to scan the URL/domain
+func GetURLInfoURLScanIo(asset string) string {
+
+	// Open urlscan.io
+	url := URLScanIOURL
+	openbrowser(url)
+
+	msg := fmt.Sprintf("[!] Supply the domain: %s to urlscan.io, and run 'Public Scan'\n", asset)
+	return msg
+}
+
+// GetDomainInfoPhishtank - Open phishtank website to check the reputation of
+// domain
+func GetDomainInfoPhishtank(asset string) string {
+
+	// Open phishtank website
+	url := PhishtankURL
+	openbrowser(url)
+
+	msg := fmt.Sprintf("[!] Supply domain: %s to phishtank, and select 'Is it a phish?'\n", asset)
+	return msg
 }
 
 // GetIPInfoShodanIo - Function to open browser to get info about the IP via
@@ -532,7 +561,14 @@ func main() {
 						domainInfo += displayProgress(assetType, asset, "dnsa")
 						domainInfo += GetDNSA(asset) + "\n\n"
 					}
-
+					if shouldExecMethod(methodDomain, "urlscan.io") {
+						domainInfo += displayProgress(assetType, asset, "urlscan.io")
+						domainInfo += GetURLInfoURLScanIo(asset) + "\n\n"
+					}
+					if shouldExecMethod(methodDomain, "phishtank") {
+						domainInfo += displayProgress(assetType, asset, "phishtank")
+						domainInfo += GetDomainInfoPhishtank(asset) + "\n\n"
+					}
 					if domainInfo != "" {
 						fmt.Printf("[+] Info on domain: %s via method: %s\n%s\n\n", asset,
 							methodDomain, domainInfo)

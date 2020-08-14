@@ -25,6 +25,8 @@ of the `gogetassetinfo` binary.
 * Shodan - provides info about an IP in browser via Shodan itself.
 * Virustotal - Perform Virustotal search within browser on IPs, domains
 * WhoIs - Provide Whois info on domain/IP
+* Phishtank - Determine if domain name is a phish
+* URLscan.io - Run the URLScan.io to scan domain
 
 ## Usage
 
@@ -136,9 +138,22 @@ To get info about IP in Shodan.io
 cat ips.txt | go run gogetassetinfo.go -mi shodan
 ```
 
+### Open Phishtank website
+To get info about domain via phishtank
+
+```
+cat subdomains.txt | go run gogetassetinfo.go -md phishtank
+```
+
+### Open URLScan.io website
+To get info about domain via urlscan.io
+
+```
+cat subdomains.txt | go run gogetassetinfo.go -md urlscan.io
+```
+
 ### TODO
 
 #### URL
-- [ ] Check Phishtank status for a URL
 - [ ] Get ALL URL redirections
 - [ ] Get response headers in the URL
