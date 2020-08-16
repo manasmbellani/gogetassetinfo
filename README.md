@@ -155,5 +155,9 @@ cat subdomains.txt | go run gogetassetinfo.go -md urlscan.io
 ### TODO
 
 #### URL
+- [ ] Get malware related to an IP via threatminer. https://www.threatminer.org/host.php?q=23.22.63.114
+- [ ] Use robtex to analyse domain: `https://www.robtex.com/dns-lookup/<domain>`
+- [ ] Use robtex to analyse IP: `https://www.robtex.com/ip-lookup/<ip>`
+- [ ] Use threatcrowd to analyse the relations with other IPs/hostnames: `https://threatcrowd.org/ip.php?ip=23.22.63.114`
 - [ ] Get ALL URL redirections
 - [ ] Get response headers in the URL
