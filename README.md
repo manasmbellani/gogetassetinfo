@@ -161,3 +161,4 @@ cat subdomains.txt | go run gogetassetinfo.go -md urlscan.io
 - [ ] Use threatcrowd to analyse the relations with other IPs/hostnames: `https://threatcrowd.org/ip.php?ip=23.22.63.114`
 - [ ] Get ALL URL redirections
 - [ ] Get response headers in the URL
+- [ ] Use AbuseIPDb API to get information on whether the IP is malicious OR not via the API: `APIv2` as documented on `docs.abuseipdb.com`
