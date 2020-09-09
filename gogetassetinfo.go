@@ -17,6 +17,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/tidwall/pretty"
 )
 
 // RegexIP - Regex to identify an IP address
@@ -397,7 +399,7 @@ func GetAlienVaultInfo(asset string, assetType string) string {
 		resp, _ := client.Do(req)
 		respBody, _ := ioutil.ReadAll(resp.Body)
 
-		out += "\n" + string(respBody)
+		out += "\n" + string(pretty.Pretty(respBody))
 	}
 
 	return out
