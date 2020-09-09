@@ -20,14 +20,15 @@ of the `gogetassetinfo` binary.
 * Google VPN Check - Perform a search to confirm if IP could belong to a VPN by performing a google search
 * IpInfo.io - Provides info about an IP via `https://ipinfo.io`
 * IPHub.info - API which provides IP types (residential (response: 0)/ proxy (response: 1) / unknown (response: 2)) for various ip addresses
-* Scamalytics - Provides reputation about an IP via the scamalytics.com website
 * IPQualityScore.com - provides reputation about an IP via the ipqualityscore.com website
+* Phishtank - Determine if domain name is a phish via Phistank API
+* Robtex - Perform Domain or IP analysis via Robtex
+* Scamalytics - Provides reputation about an IP via the scamalytics.com website
 * Shodan - provides info about an IP in browser via Shodan itself.
+* Threatminer - Returns reputation info about domain or IP address
+* URLscan.io - Run the URLScan.io to scan domain
 * Virustotal - Perform Virustotal search within browser on IPs, domains
 * WhoIs - Provide Whois info on domain/IP
-* Phishtank - Determine if domain name is a phish
-* URLscan.io - Run the URLScan.io to scan domain
-* Threatminer - Returns reputation info about domain or IP address
 
 ## Usage
 
@@ -164,8 +165,6 @@ cat ips-subdomains.txt | go run gogetassetinfo.go -mi threatminer -md threatmine
 ### TODO
 
 #### URL
-- [ ] Use robtex to analyse domain: `https://www.robtex.com/dns-lookup/<domain>`
-- [ ] Use robtex to analyse IP: `https://www.robtex.com/ip-lookup/<ip>`
 - [ ] Use threatcrowd to analyse the relations with other IPs/hostnames: `https://threatcrowd.org/ip.php?ip=23.22.63.114`
 - [ ] Get ALL URL redirections
 - [ ] Get response headers in the URL

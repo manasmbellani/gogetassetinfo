@@ -36,12 +36,12 @@ const RegexSHA1 = "^[a-fA-F0-9]{40}$"
 const RegexSHA256 = "^[a-fA-F0-9]{64}$"
 
 // IPMethods - List of all the methods to apply to IP assets
-var IPMethods []string = []string{"dnsptr", "iphub", "whois", "alienvault", "googlevpncheck", "ipinfo.io",
-	"ipqualityscore", "shodan", "scamalytics", "virustotal", "threatminer", "all"}
+var IPMethods []string = []string{"alienvault", "dnsptr", "iphub", "googlevpncheck", "ipinfo.io",
+	"ipqualityscore", "robtex", "shodan", "scamalytics", "threatminer", "virustotal", "whois", "all"}
 
 // DomainMethods - List of all the methods to apply to domain assets
-var DomainMethods []string = []string{"whois", "alienvault", "dnsmx", "dnstxt", "dnsa",
-	"resolve", "virustotal", "urlscan.io", "phishtank", "threatminer", "all"}
+var DomainMethods []string = []string{"alienvault", "dnsa", "dnsmx", "dnstxt",
+	"resolve", "robtex", "virustotal", "urlscan.io", "phishtank", "threatminer", "whois", "all"}
 
 // DefUserAgent - Default user agent to use for all web requests
 var DefUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
@@ -96,6 +96,12 @@ const AlienVaultDomainSections = "general,geo,malware,url_list,whois,passive_dns
 
 // ThreatMinerURL - URL to get information about an IP address or Domain via ThreatMiner
 const ThreatMinerURL = "https://www.threatminer.org/host.php?q="
+
+// RobtexIPLookupURL - URL of the Robtex to lookup IP
+const RobtexIPLookupURL = "https://www.robtex.com/ip-lookup/"
+
+// RobtexDomainLookupURL - URL of the Robtex to lookup Domains
+const RobtexDomainLookupURL = "https://www.robtex.com/dns-lookup/"
 
 // GetAssetType - Get the type of asset e.g ipv4, domain, md5, sha1, sha256
 // or unknown
@@ -219,6 +225,20 @@ func GetThreatMinerInfo(asset string) {
 
 	// Build the ThreatMiner URL to open in the browser
 	url := fmt.Sprintf("%s%s", ThreatMinerURL, asset)
+	openbrowser(url)
+}
+
+// GetRobtexIPInfo - Get RobTex Info about domain/IP
+func GetRobtexIPInfo(asset string) {
+	// Build the Robtex URL to open in the browser
+	url := fmt.Sprintf("%s%s", RobtexIPLookupURL, asset)
+	openbrowser(url)
+}
+
+// GetRobtexDomainInfo - Get RobTex Info about domain/IP
+func GetRobtexDomainInfo(asset string) {
+	// Build the Robtex URL to open in the browser
+	url := fmt.Sprintf("%s%s", RobtexDomainLookupURL, asset)
 	openbrowser(url)
 }
 
@@ -543,6 +563,10 @@ func main() {
 						ipInfo += displayProgress(assetType, asset, "threatminer")
 						GetThreatMinerInfo(asset)
 					}
+					if shouldExecMethod(methodIP, "robtex") {
+						ipInfo += displayProgress(assetType, asset, "robtex")
+						GetRobtexIPInfo(asset)
+					}
 
 					// Display results to the user
 					if ipInfo != "" {
@@ -588,6 +612,10 @@ func main() {
 					if shouldExecMethod(methodDomain, "threatminer") {
 						ipInfo += displayProgress(assetType, asset, "threatminer")
 						GetThreatMinerInfo(asset)
+					}
+					if shouldExecMethod(methodIP, "robtex") {
+						ipInfo += displayProgress(assetType, asset, "robtex")
+						GetRobtexDomainInfo(asset)
 					}
 					if domainInfo != "" {
 						fmt.Printf("[+] Info on domain: %s via method: %s\n%s\n\n", asset,
