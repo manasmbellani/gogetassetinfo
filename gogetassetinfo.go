@@ -36,7 +36,7 @@ const RegexSHA1 = "^[a-fA-F0-9]{40}$"
 const RegexSHA256 = "^[a-fA-F0-9]{64}$"
 
 // IPMethods - List of all the methods to apply to IP assets
-var IPMethods []string = []string{"alienvault", "dnsptr", "iphub", "googlevpncheck", "ipinfo.io",
+var IPMethods []string = []string{"abuseip", "alienvault", "dnsptr", "iphub", "googlevpncheck", "ipinfo.io",
 	"ipqualityscore", "robtex", "shodan", "scamalytics", "threatcrowd", "threatminer", "virustotal", "whois", "all"}
 
 // DomainMethods - List of all the methods to apply to domain assets
@@ -108,6 +108,12 @@ const ThreatCrowdIPURL = "https://threatcrowd.org/ip.php?ip="
 
 // ThreatCrowdDomainURL - URL get info about a domain via threatcrowd
 const ThreatCrowdDomainURL = "https://threatcrowd.org/domain.php?domain="
+
+// AbuseIPAPIKeyEnvVar - AbuseIP DB APIv2 Key environment variable
+const AbuseIPAPIKeyEnvVar = "ABUSEIP_API_KEY"
+
+// AbuseIPURL - URL to talk to get reputation of IP via AbuseIP DB
+const AbuseIPURL = "https://api.abuseipdb.com/api/v2/check?maxAgeInDays=90&ipAddress="
 
 // GetAssetType - Get the type of asset e.g ipv4, domain, md5, sha1, sha256
 // or unknown
@@ -192,6 +198,46 @@ func GetIPInfoIo(asset string) string {
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
 	return string(respBody)
+}
+
+// GetAbuseIPInfo - Get IP information via abuseip database through APIv2 API
+func GetAbuseIPInfo(asset string, abuseIPKey string, abuseReportVerbose bool) string {
+
+	if abuseIPKey == "" {
+		// Check os environ variables for the iphub API key
+		abuseIPKey = os.Getenv(AbuseIPAPIKeyEnvVar)
+	}
+
+	// API Key must be provided for IPHub, otherwise, no point in going further
+	if abuseIPKey == "" {
+		log.Fatalf("API Key not found for AbuseIP DB. Exiting.")
+	}
+
+	// Building the HTTP request template
+	client := &http.Client{}
+
+	// Setup a request template with the User Agent and API Key Header
+	url := ""
+	if !abuseReportVerbose {
+		url = AbuseIPURL + asset
+	} else {
+		url = AbuseIPURL + asset + "&verbose=yes"
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Set("User-Agent", DefUserAgent)
+	req.Header.Set("Key", abuseIPKey)
+	req.Header.Set("Accept", "application/json")
+
+	// Check if there were issues in create the post request object
+	if err != nil {
+		log.Fatalf("Error creating GET request object for AbuseIPDB. Error: %s", err.Error())
+	}
+
+	// Send web request
+	resp, _ := client.Do(req)
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
+	return string(pretty.Pretty(respBody))
 }
 
 // GetIPInfoIPHub - Function to make IPHub.info API request to get more info on
@@ -494,12 +540,15 @@ func main() {
 		"IPHub Key to use. If '', then read from env var: "+IPHubKeyEnvVar)
 	sleepTimePtr := flag.Int("st", 3,
 		"Sleep time between individual requests. Valid if num threads set to 1")
+	abuseReportVerbosePtr := flag.Bool("ar", false,
+		"Report the abuses for each IP by setting verbose flag for AbuseIP DB")
 	flag.Parse()
 	methodDomain := *methodDomainPtr
 	methodIP := *methodIPPtr
 	threads := *threadsPtr
 	sleepTime := *sleepTimePtr
 	ipHubKey := *ipHubKeyPtr
+	abuseReportVerbose := *abuseReportVerbosePtr
 
 	if methodDomain == "" {
 		log.Printf("Defaulting to method: %s for asset: domain", DefMethodDomain)
@@ -591,7 +640,10 @@ func main() {
 						ipInfo += displayProgress(assetType, asset, "threatcrowd")
 						GetThreatCrowdIPInfo(asset)
 					}
-
+					if shouldExecMethod(methodIP, "abuseip") {
+						ipInfo += displayProgress(assetType, asset, "abuseip")
+						ipInfo += GetAbuseIPInfo(asset, "", abuseReportVerbose)
+					}
 					// Display results to the user
 					if ipInfo != "" {
 						fmt.Printf("[+] Info on IP: %s via method: %s\n%s\n\n", asset,

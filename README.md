@@ -16,6 +16,7 @@ of the `gogetassetinfo` binary.
 
 ## Supported API Sources
 * Alienvault - Provide Alienvault pulse info in raw format.
+* AbuseIPDB - Provides information about an IP address via the AbuseIPDB
 * DNS Resolutions - provide DNS A, DNS TXT, DNS MX, resolution for domains and DNS PTR for IP addresses
 * Google VPN Check - Perform a search to confirm if IP could belong to a VPN by performing a google search
 * IpInfo.io - Provides info about an IP via `https://ipinfo.io`
@@ -26,6 +27,7 @@ of the `gogetassetinfo` binary.
 * Scamalytics - Provides reputation about an IP via the scamalytics.com website
 * Shodan - provides info about an IP in browser via Shodan itself.
 * Threatminer - Returns reputation info about domain or IP address
+* ThreatCrowd - Returns reputation info about domain or IP address
 * URLscan.io - Run the URLScan.io to scan domain
 * Virustotal - Perform Virustotal search within browser on IPs, domains
 * WhoIs - Provide Whois info on domain/IP
@@ -36,6 +38,19 @@ of the `gogetassetinfo` binary.
 To run all the checks on IPs/domains from file `assets.txt` listed below:- 
 ```
 cat assets.txt | go run gogetassetinfo.go -md all -mi all
+```
+
+### Using AbuseIPDB 
+The APIv2 of AbuseIP's API is used. This requires creation of an API account from https://www.abuseipdb.com/account/api and storing the API key in environment variable `ABUSEIP_API_KEY`. 
+
+Then run the following command to get a summary of each IP from AbuseIP key
+```
+$ cat ips.txt | go run gogetassetinfo.go -mi abuseip
+```
+
+To get detailed info, use `-ar` flag for specific IP only. 
+```
+$ echo "1.1.1.1" | go run gogetassetinfo.go -mi abuseip -ar
 ```
 
 ### Using IPHub
@@ -155,14 +170,17 @@ cat subdomains.txt | go run gogetassetinfo.go -md urlscan.io
 ```
 
 ### Using Threatminer
-To get info about domain via threatminer
+To get info about domain via threatminer in a browser
 
 ```
 cat ips-subdomains.txt | go run gogetassetinfo.go -mi threatminer -md threatminer
 ```
 
 ### Using Threatcrowd
-To get info about 
+To get info about an IP/domain via threatcrowd in a browser
+```
+cat ips-subdomains.txt | go run gogetassetinfo.go -mi threatcrowd -md threatcrowd
+```
 
 ### Using Robtex
 To get info about domain via robtex
@@ -180,4 +198,3 @@ $ cat ips-subdomains.txt | go run gogetassetinfo.go -mi robtex -md robtex
 #### URL
 - [ ] Get ALL URL redirections
 - [ ] Get response headers in the URL
-- [ ] Use AbuseIPDb API to get information on whether the IP is malicious OR not via the API: `APIv2` as documented on `docs.abuseipdb.com`
