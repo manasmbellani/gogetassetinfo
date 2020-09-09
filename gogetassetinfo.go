@@ -209,7 +209,7 @@ func GetIPInfoIPHub(asset string, ipHubAPIKey string) string {
 	resp, _ := client.Do(req)
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
-	return string(respBody)
+	return string(pretty.Pretty(respBody))
 }
 
 // GetIPInfoScamalytics - Function opens a browser with URL to Scamalytics
