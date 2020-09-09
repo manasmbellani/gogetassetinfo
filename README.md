@@ -27,6 +27,7 @@ of the `gogetassetinfo` binary.
 * WhoIs - Provide Whois info on domain/IP
 * Phishtank - Determine if domain name is a phish
 * URLscan.io - Run the URLScan.io to scan domain
+* Threatminer - Returns reputation info about domain or IP address
 
 ## Usage
 
@@ -152,10 +153,17 @@ To get info about domain via urlscan.io
 cat subdomains.txt | go run gogetassetinfo.go -md urlscan.io
 ```
 
+### Using Threatminer
+To get info about domain via threatminer
+
+```
+cat ips-subdomains.txt | go run gogetassetinfo.go -mi threatminer -md threatminer
+```
+
+
 ### TODO
 
 #### URL
-- [ ] Get malware related to an IP via threatminer. https://www.threatminer.org/host.php?q=23.22.63.114
 - [ ] Use robtex to analyse domain: `https://www.robtex.com/dns-lookup/<domain>`
 - [ ] Use robtex to analyse IP: `https://www.robtex.com/ip-lookup/<ip>`
 - [ ] Use threatcrowd to analyse the relations with other IPs/hostnames: `https://threatcrowd.org/ip.php?ip=23.22.63.114`

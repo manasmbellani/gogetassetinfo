@@ -37,11 +37,11 @@ const RegexSHA256 = "^[a-fA-F0-9]{64}$"
 
 // IPMethods - List of all the methods to apply to IP assets
 var IPMethods []string = []string{"dnsptr", "iphub", "whois", "alienvault", "googlevpncheck", "ipinfo.io",
-	"ipqualityscore", "shodan", "scamalytics", "virustotal", "all"}
+	"ipqualityscore", "shodan", "scamalytics", "virustotal", "threatminer", "all"}
 
 // DomainMethods - List of all the methods to apply to domain assets
 var DomainMethods []string = []string{"whois", "alienvault", "dnsmx", "dnstxt", "dnsa",
-	"resolve", "virustotal", "urlscan.io", "phishtank", "all"}
+	"resolve", "virustotal", "urlscan.io", "phishtank", "threatminer", "all"}
 
 // DefUserAgent - Default user agent to use for all web requests
 var DefUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
@@ -93,6 +93,9 @@ const AlienVaultIPv6Sections = "general,reputation,geo,malware,url_list,passive_
 
 // AlienVaultDomainSections - sections to get for domain from AlienVault
 const AlienVaultDomainSections = "general,geo,malware,url_list,whois,passive_dns"
+
+// ThreatMinerURL - URL to get information about an IP address or Domain via ThreatMiner
+const ThreatMinerURL = "https://www.threatminer.org/host.php?q="
 
 // GetAssetType - Get the type of asset e.g ipv4, domain, md5, sha1, sha256
 // or unknown
@@ -209,6 +212,14 @@ func GetIPInfoIPHub(asset string, ipHubAPIKey string) string {
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
 	return string(pretty.Pretty(respBody))
+}
+
+// GetThreatMinerInfo - Get ThreatMiner Info about the domain/IP
+func GetThreatMinerInfo(asset string) {
+
+	// Build the ThreatMiner URL to open in the browser
+	url := fmt.Sprintf("%s%s", ThreatMinerURL, asset)
+	openbrowser(url)
 }
 
 // GetIPInfoScamalytics - Function opens a browser with URL to Scamalytics
@@ -528,6 +539,10 @@ func main() {
 						ipInfo += displayProgress(assetType, asset, "dnsptr")
 						ipInfo += GetDNSPtr(asset)
 					}
+					if shouldExecMethod(methodIP, "threatminer") {
+						ipInfo += displayProgress(assetType, asset, "threatminer")
+						GetThreatMinerInfo(asset)
+					}
 
 					// Display results to the user
 					if ipInfo != "" {
@@ -569,6 +584,10 @@ func main() {
 					if shouldExecMethod(methodDomain, "phishtank") {
 						domainInfo += displayProgress(assetType, asset, "phishtank")
 						domainInfo += GetDomainInfoPhishtank(asset) + "\n\n"
+					}
+					if shouldExecMethod(methodDomain, "threatminer") {
+						ipInfo += displayProgress(assetType, asset, "threatminer")
+						GetThreatMinerInfo(asset)
 					}
 					if domainInfo != "" {
 						fmt.Printf("[+] Info on domain: %s via method: %s\n%s\n\n", asset,
