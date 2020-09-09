@@ -37,11 +37,11 @@ const RegexSHA256 = "^[a-fA-F0-9]{64}$"
 
 // IPMethods - List of all the methods to apply to IP assets
 var IPMethods []string = []string{"alienvault", "dnsptr", "iphub", "googlevpncheck", "ipinfo.io",
-	"ipqualityscore", "robtex", "shodan", "scamalytics", "threatminer", "virustotal", "whois", "all"}
+	"ipqualityscore", "robtex", "shodan", "scamalytics", "threatcrowd", "threatminer", "virustotal", "whois", "all"}
 
 // DomainMethods - List of all the methods to apply to domain assets
 var DomainMethods []string = []string{"alienvault", "dnsa", "dnsmx", "dnstxt",
-	"resolve", "robtex", "virustotal", "urlscan.io", "phishtank", "threatminer", "whois", "all"}
+	"resolve", "robtex", "virustotal", "urlscan.io", "phishtank", "threatcrowd", "threatminer", "whois", "all"}
 
 // DefUserAgent - Default user agent to use for all web requests
 var DefUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
@@ -102,6 +102,12 @@ const RobtexIPLookupURL = "https://www.robtex.com/ip-lookup/"
 
 // RobtexDomainLookupURL - URL of the Robtex to lookup Domains
 const RobtexDomainLookupURL = "https://www.robtex.com/dns-lookup/"
+
+// ThreatCrowdIPURL - URL to get info about an IP via threatcrowd
+const ThreatCrowdIPURL = "https://threatcrowd.org/ip.php?ip="
+
+// ThreatCrowdDomainURL - URL get info about a domain via threatcrowd
+const ThreatCrowdDomainURL = "https://threatcrowd.org/domain.php?domain="
 
 // GetAssetType - Get the type of asset e.g ipv4, domain, md5, sha1, sha256
 // or unknown
@@ -239,6 +245,20 @@ func GetRobtexIPInfo(asset string) {
 func GetRobtexDomainInfo(asset string) {
 	// Build the Robtex URL to open in the browser
 	url := fmt.Sprintf("%s%s", RobtexDomainLookupURL, asset)
+	openbrowser(url)
+}
+
+// GetThreatCrowdIPInfo - Get information about an IP via threatCrowd
+func GetThreatCrowdIPInfo(asset string) {
+	//Build the URL to open in browser
+	url := fmt.Sprintf("%s%s", ThreatCrowdIPURL, asset)
+	openbrowser(url)
+}
+
+// GetThreatCrowdDomainInfo - Get information about a domain via threatcrowd
+func GetThreatCrowdDomainInfo(asset string) {
+	// Build the URL to open in browser
+	url := fmt.Sprintf("%s%s", ThreatCrowdDomainURL, asset)
 	openbrowser(url)
 }
 
@@ -567,6 +587,10 @@ func main() {
 						ipInfo += displayProgress(assetType, asset, "robtex")
 						GetRobtexIPInfo(asset)
 					}
+					if shouldExecMethod(methodIP, "threatcrowd") {
+						ipInfo += displayProgress(assetType, asset, "threatcrowd")
+						GetThreatCrowdIPInfo(asset)
+					}
 
 					// Display results to the user
 					if ipInfo != "" {
@@ -610,13 +634,18 @@ func main() {
 						domainInfo += GetDomainInfoPhishtank(asset) + "\n\n"
 					}
 					if shouldExecMethod(methodDomain, "threatminer") {
-						ipInfo += displayProgress(assetType, asset, "threatminer")
+						domainInfo += displayProgress(assetType, asset, "threatminer")
 						GetThreatMinerInfo(asset)
 					}
 					if shouldExecMethod(methodIP, "robtex") {
-						ipInfo += displayProgress(assetType, asset, "robtex")
+						domainInfo += displayProgress(assetType, asset, "robtex")
 						GetRobtexDomainInfo(asset)
 					}
+					if shouldExecMethod(methodIP, "threatcrowd") {
+						domainInfo += displayProgress(assetType, asset, "threatcrowd")
+						GetThreatCrowdDomainInfo(asset)
+					}
+
 					if domainInfo != "" {
 						fmt.Printf("[+] Info on domain: %s via method: %s\n%s\n\n", asset,
 							methodDomain, domainInfo)

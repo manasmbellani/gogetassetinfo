@@ -161,11 +161,23 @@ To get info about domain via threatminer
 cat ips-subdomains.txt | go run gogetassetinfo.go -mi threatminer -md threatminer
 ```
 
+### Using Threatcrowd
+To get info about 
+
+### Using Robtex
+To get info about domain via robtex
+
+```
+$ cat ip-subdomains.txt
+google.com
+1.1.1.1
+
+$ cat ips-subdomains.txt | go run gogetassetinfo.go -mi robtex -md robtex
+```
 
 ### TODO
 
 #### URL
-- [ ] Use threatcrowd to analyse the relations with other IPs/hostnames: `https://threatcrowd.org/ip.php?ip=23.22.63.114`
 - [ ] Get ALL URL redirections
 - [ ] Get response headers in the URL
 - [ ] Use AbuseIPDb API to get information on whether the IP is malicious OR not via the API: `APIv2` as documented on `docs.abuseipdb.com`
