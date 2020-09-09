@@ -1,4 +1,3 @@
-// Main - contains the script to talk to different APIs
 package main
 
 import (
