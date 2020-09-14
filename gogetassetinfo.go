@@ -342,7 +342,7 @@ func GetDomainInfoPhishtank(asset string) string {
 // GetIPInfoShodanIo - Function to open browser to get info about the IP via
 // Shodan.io
 func GetIPInfoShodanIo(asset string) {
-	url := ShodanURL + "/" + asset
+	url := ShodanURL + asset
 	openbrowser(url)
 }
 
