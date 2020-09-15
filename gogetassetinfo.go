@@ -35,13 +35,16 @@ const RegexSHA1 = "^[a-fA-F0-9]{40}$"
 // RegexSHA256 - Regex to identify SHA256
 const RegexSHA256 = "^[a-fA-F0-9]{64}$"
 
+// RegexWhoIsOrgName - Regex to get the Organization name via WhoIs
+const RegexWhoIsOrgName = "(?i)(Registrant Organization|Tech Organization|OrgName|org-Name|organization-name)\\s*:\\s*.*"
+
 // IPMethods - List of all the methods to apply to IP assets
 var IPMethods []string = []string{"abuseip", "alienvault", "dnsptr", "iphub", "googlevpncheck", "ipinfo.io",
-	"ipqualityscore", "robtex", "shodan", "scamalytics", "threatcrowd", "threatminer", "virustotal", "whois", "all"}
+	"ipqualityscore", "org_whois", "robtex", "shodan", "scamalytics", "threatcrowd", "threatminer", "virustotal", "whois", "all"}
 
 // DomainMethods - List of all the methods to apply to domain assets
-var DomainMethods []string = []string{"alienvault", "dnsa", "dnsmx", "dnstxt",
-	"resolve", "robtex", "virustotal", "urlscan.io", "phishtank", "threatcrowd", "threatminer", "whois", "all"}
+var DomainMethods []string = []string{"alienvault", "dnsa", "dnsmx", "dnstxt", "org_whois",
+	"phishtank", "resolve", "robtex", "virustotal", "urlscan.io", "threatcrowd", "threatminer", "whois", "all"}
 
 // DefUserAgent - Default user agent to use for all web requests
 var DefUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
@@ -419,6 +422,21 @@ func GetWhoIs(asset string) string {
 	return execCmd(cmdToExec)
 }
 
+// GetOrgNameWhoIs - Get the organization names via Whois
+func GetOrgNameWhoIs(asset string) string {
+	// First get whois output
+	whoisOutput := GetWhoIs(asset)
+
+	// Regex to search the Whois output for all organization names
+	rex, _ := regexp.Compile(RegexWhoIsOrgName)
+	orgNamesArr := rex.FindAllString(whoisOutput, -1)
+	orgNamesStr := ""
+	if orgNamesArr != nil {
+		orgNamesStr = strings.Join(orgNamesArr, "\n")
+	}
+	return orgNamesStr
+}
+
 // GetDNSPtr - Get the PTR value for IP address
 func GetDNSPtr(ipaddr string) string {
 	hostname := ""
@@ -644,6 +662,10 @@ func main() {
 						ipInfo += displayProgress(assetType, asset, "abuseip")
 						ipInfo += GetAbuseIPInfo(asset, "", abuseReportVerbose)
 					}
+					if shouldExecMethod(methodIP, "org_whois") {
+						ipInfo += displayProgress(assetType, asset, "org_whois")
+						ipInfo += GetOrgNameWhoIs(asset)
+					}
 					// Display results to the user
 					if ipInfo != "" {
 						fmt.Printf("[+] Info on IP: %s via method: %s\n%s\n\n", asset,
@@ -689,15 +711,18 @@ func main() {
 						domainInfo += displayProgress(assetType, asset, "threatminer")
 						GetThreatMinerInfo(asset)
 					}
-					if shouldExecMethod(methodIP, "robtex") {
+					if shouldExecMethod(methodDomain, "robtex") {
 						domainInfo += displayProgress(assetType, asset, "robtex")
 						GetRobtexDomainInfo(asset)
 					}
-					if shouldExecMethod(methodIP, "threatcrowd") {
+					if shouldExecMethod(methodDomain, "threatcrowd") {
 						domainInfo += displayProgress(assetType, asset, "threatcrowd")
 						GetThreatCrowdDomainInfo(asset)
 					}
-
+					if shouldExecMethod(methodDomain, "org_whois") {
+						domainInfo += displayProgress(assetType, asset, "org_whois")
+						domainInfo += GetOrgNameWhoIs(asset)
+					}
 					if domainInfo != "" {
 						fmt.Printf("[+] Info on domain: %s via method: %s\n%s\n\n", asset,
 							methodDomain, domainInfo)

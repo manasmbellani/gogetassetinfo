@@ -79,19 +79,29 @@ More info about the API is available `here`: https://iphub.info/api
 ### Using whois
 To get the WhoIs information about given domain/IP: -
 ```
-echo -e "1.1.1.1\n2.2.2.2\ngoogle.com" | go run gogetassetinfo.go  -md whois -mi whois | tee /tmp/results.txt
+echo -e "1.1.1.1\n2.2.2.2\ngoogle.com" | go run gogetassetinfo.go -md whois -mi whois | tee /tmp/results.txt
+```
+
+### Using whois to get organization's name
+To get the organization's name for an IP or domain via WhoIs: -
+```
+$ cat assets.txt
+1.1.1.1
+google.com
+
+$ cat assets.txt | go run gogetassetinfo.go -mi org_whois -md org_whois | tee /tmp/results.txt
 ```
 
 ### Using Alienvault
 To get the Alienvault pulses and other info about the domain/IP :-
 ```
-echo -e "1.1.1.1\n2.2.2.2" | go run gogetassetinfo.go  -mi alienvault -md alienvault | tee /tmp/results.txt
+echo -e "1.1.1.1\n2.2.2.2" | go run gogetassetinfo.go -mi alienvault -md alienvault | tee /tmp/results.txt
 ```
 
 ### Using Scamalytics
 To get the Scamalytics reputation info about the IP in default browser:-
 ```
-echo -e "1.1.1.1\n2.2.2.2" | go run gogetassetinfo.go  -mi scamalytics
+echo -e "1.1.1.1\n2.2.2.2" | go run gogetassetinfo.go -mi scamalytics
 ```
 
 ### Using IPQualityScore.com
