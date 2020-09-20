@@ -213,7 +213,8 @@ func GetAbuseIPInfo(asset string, abuseIPKey string, abuseReportVerbose bool) st
 
 	// API Key must be provided for IPHub, otherwise, no point in going further
 	if abuseIPKey == "" {
-		log.Fatalf("API Key not found for AbuseIP DB. Exiting.")
+		log.Printf("API Key not found for AbuseIP DB. Exiting.")
+		return ""
 	}
 
 	// Building the HTTP request template
@@ -254,7 +255,8 @@ func GetIPInfoIPHub(asset string, ipHubAPIKey string) string {
 
 	// API Key must be provided for IPHub, otherwise, no point in going further
 	if ipHubAPIKey == "" {
-		log.Fatalf("API Key not found for IPHub. Exiting.")
+		log.Printf("API Key not found for IPHub. Exiting.")
+		return ""
 	}
 
 	// Building the HTTP request template
