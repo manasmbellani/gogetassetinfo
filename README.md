@@ -209,6 +209,8 @@ $ cat ips-subdomains.txt | go run gogetassetinfo.go -mi robtex -md robtex
 - [ ] Get ALL URL redirections
 - [ ] Get response headers in the URL
 - [ ] Add IBM XForce Exchange IP/Domain analysis: https://exchange.xforce.ibmcloud.com/ip/<ip-address> OR https://exchange.xforce.ibmcloud.com/ip/<domain>
+
+#### IP
 - [ ] Expand AbuseIPDB Reports by parsing the response
 - [ ] Use `spur.us` for IP and VPN investigation: https://spur.us/context/91.235.142.76
 - [ ] Add Hybrid Analysis to confirm if any recent malicious activity is available about an IP: https://hybrid-analsis.com/search?query=147.135.196.128
