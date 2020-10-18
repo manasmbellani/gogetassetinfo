@@ -39,12 +39,15 @@ const RegexSHA256 = "^[a-fA-F0-9]{64}$"
 const RegexWhoIsOrgName = "(?i)(Registrant Organization|Tech Organization|OrgName|org-Name|organization-name)\\s*:\\s*.*"
 
 // IPMethods - List of all the methods to apply to IP assets
-var IPMethods []string = []string{"abuseip", "alienvault", "dnsptr", "iphub", "googlevpncheck", "ipinfo.io",
-	"ipqualityscore", "org_whois", "robtex", "shodan", "scamalytics", "threatcrowd", "threatminer", "virustotal", "whois", "all"}
+var IPMethods []string = []string{"abuseip", "alienvault", "dnsptr", "iphub",
+	"googlevpncheck", "hybridanalysis", "ibmxforce", "ipinfo.io", "ipqualityscore",
+	"org_whois", "robtex", "shodan", "scamalytics", "spur.us", "threatcrowd",
+	"threatminer", "torexonerator", "virustotal", "whois", "all"}
 
 // DomainMethods - List of all the methods to apply to domain assets
-var DomainMethods []string = []string{"alienvault", "dnsa", "dnsmx", "dnstxt", "org_whois",
-	"phishtank", "resolve", "robtex", "virustotal", "urlscan.io", "threatcrowd", "threatminer", "whois", "all"}
+var DomainMethods []string = []string{"alienvault", "dnsa", "dnsmx", "dnstxt",
+	"org_whois", "phishtank", "resolve", "robtex", "virustotal", "urlscan.io",
+	"threatcrowd", "threatminer", "whois", "all"}
 
 // DefUserAgent - Default user agent to use for all web requests
 var DefUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
@@ -120,6 +123,18 @@ const AbuseIPURL = "https://api.abuseipdb.com/api/v2/check?maxAgeInDays=90&ipAdd
 
 // AbuseIPWebsite - URL to the AbuseIP website
 const AbuseIPWebsite = "https://www.abuseipdb.com/check/"
+
+// SpurUSWebsite - URL for the spur.us website to identify VPN IPs
+const SpurUSWebsite = "https://spur.us/context/"
+
+// HybridAnalysisWebsite - URL for the Hybrid Analysis website
+const HybridAnalysisWebsite = "https://hybrid-analysis.com/search?query="
+
+// TorExoneratorWebsite - URL for the Tor Exonerator to check if an IP is TOR
+const TorExoneratorWebsite = "https://metrics.torproject.org/exonerator.html"
+
+// IBMXForceURL - URL for the IBM XForce website/UI
+const IBMXForceURL = "https://exchange.xforce.ibmcloud.com/ip/"
 
 // GetAssetType - Get the type of asset e.g ipv4, domain, md5, sha1, sha256
 // or unknown
@@ -250,7 +265,7 @@ func GetAbuseIPInfo(asset string, abuseIPKey string, abuseReportVerbose bool) st
 
 	// Request user to go to the website, if number of reports > 0
 	respStr += "[!] See Abuse IP Website if totalReports > 0:\n"
-	respStr += fmt.Sprintf("    %s%s", AbuseIPWebsite, asset)
+	respStr += fmt.Sprintf("    %s%s\n\n", AbuseIPWebsite, asset)
 
 	return respStr
 }
@@ -366,6 +381,39 @@ func GetIPInfoShodanIo(asset string) {
 func GetIPVPNInfo(asset string) {
 	// Open Google Search
 	url := fmt.Sprintf(GoogleSearchURL+"%s+vpn", asset)
+	openbrowser(url)
+}
+
+// GetIPVPNInfoSpurUS - Function to get VPN Information about an IP via Spur.US
+//     website
+func GetIPVPNInfoSpurUS(asset string) {
+	// Open spur.us website
+	url := fmt.Sprintf("%s%s", SpurUSWebsite, asset)
+	openbrowser(url)
+}
+
+// GetIPInfoHybridAnalysis - Function to get the information about an IP via
+//     Hybrid Analysis website
+func GetIPInfoHybridAnalysis(asset string) {
+	// Open Hybrid Analysis website
+	url := fmt.Sprintf("%s%s", HybridAnalysisWebsite, asset)
+	openbrowser(url)
+}
+
+// GetIPInfoIBMXForce - Function to get the information about an IP via IBM
+//     X-Force
+func GetIPInfoIBMXForce(asset string) {
+	url := fmt.Sprintf("%s%s", IBMXForceURL, asset)
+	openbrowser(url)
+}
+
+// GetIPInfoTorExonerator - Function to get the information about an IP via Tor
+//     Exonerator website
+func GetIPInfoTorExonerator(asset string) {
+	dt := time.Now()
+	dateStr := dt.Format("2006-1-02")
+	url := fmt.Sprintf("%s?ip=%s&timestamp=%s&lang=en", TorExoneratorWebsite,
+		asset, dateStr)
 	openbrowser(url)
 }
 
@@ -654,6 +702,22 @@ func main() {
 					if shouldExecMethod(methodIP, "googlevpncheck") {
 						ipInfo += displayProgress(assetType, asset, "googlevpncheck")
 						GetIPVPNInfo(asset)
+					}
+					if shouldExecMethod(methodIP, "spur.us") {
+						ipInfo += displayProgress(assetType, asset, "spur.us")
+						GetIPVPNInfoSpurUS(asset)
+					}
+					if shouldExecMethod(methodIP, "hybridanalysis") {
+						ipInfo += displayProgress(assetType, asset, "hybridanalysis")
+						GetIPInfoHybridAnalysis(asset)
+					}
+					if shouldExecMethod(methodIP, "ibmxforce") {
+						ipInfo += displayProgress(assetType, asset, "ibmxforce")
+						GetIPInfoIBMXForce(asset)
+					}
+					if shouldExecMethod(methodIP, "torexonerator") {
+						ipInfo += displayProgress(assetType, asset, "torexonerator")
+						GetIPInfoTorExonerator(asset)
 					}
 					if shouldExecMethod(methodIP, "dnsptr") {
 						ipInfo += displayProgress(assetType, asset, "dnsptr")
