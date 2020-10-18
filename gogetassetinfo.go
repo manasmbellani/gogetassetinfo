@@ -118,6 +118,9 @@ const AbuseIPAPIKeyEnvVar = "ABUSEIP_API_KEY"
 // AbuseIPURL - URL to talk to get reputation of IP via AbuseIP DB
 const AbuseIPURL = "https://api.abuseipdb.com/api/v2/check?maxAgeInDays=90&ipAddress="
 
+// AbuseIPWebsite - URL to the AbuseIP website
+const AbuseIPWebsite = "https://www.abuseipdb.com/check/"
+
 // GetAssetType - Get the type of asset e.g ipv4, domain, md5, sha1, sha256
 // or unknown
 func GetAssetType(asset string) string {
@@ -241,7 +244,15 @@ func GetAbuseIPInfo(asset string, abuseIPKey string, abuseReportVerbose bool) st
 	resp, _ := client.Do(req)
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
-	return string(pretty.Pretty(respBody))
+	// Print the JSON response prettified
+	respStr := string(pretty.Pretty(respBody))
+	respStr += "\n\n"
+
+	// Request user to go to the website, if number of reports > 0
+	respStr += "[!] See Abuse IP Website if totalReports > 0:\n"
+	respStr += fmt.Sprintf("    %s%s", AbuseIPWebsite, asset)
+
+	return respStr
 }
 
 // GetIPInfoIPHub - Function to make IPHub.info API request to get more info on
