@@ -411,7 +411,9 @@ func GetIPInfoIBMXForce(asset string) {
 //     Exonerator website
 func GetIPInfoTorExonerator(asset string) {
 	dt := time.Now()
-	dateStr := dt.Format("2006-1-02")
+
+	// Get the date from 5 days ago
+	dateStr := dt.AddDate(0, 0, -5).Format("2006-1-02")
 	url := fmt.Sprintf("%s?ip=%s&timestamp=%s&lang=en", TorExoneratorWebsite,
 		asset, dateStr)
 	openbrowser(url)
