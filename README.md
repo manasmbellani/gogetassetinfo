@@ -209,5 +209,7 @@ $ cat ips-subdomains.txt | go run gogetassetinfo.go -mi robtex -md robtex
 - [ ] Get ALL URL redirections
 - [ ] Get response headers in the URL
 - [ ] Add IBM XForce Exchange Domain analysis: https://exchange.xforce.ibmcloud.com/ip/<domain>
+- [ ] Add spamhaus for domain for abuse checks
 
 #### IP
+- [ ] Add spamhaus for IP abuse checks
