@@ -41,13 +41,13 @@ const RegexWhoIsOrgName = "(?i)(Registrant Organization|Tech Organization|OrgNam
 // IPMethods - List of all the methods to apply to IP assets
 var IPMethods []string = []string{"abuseip", "alienvault", "dnsptr", "iphub",
 	"googlevpncheck", "hybridanalysis", "ibmxforce", "ipinfo.io", "ipqualityscore",
-	"org_whois", "robtex", "shodan", "scamalytics", "spur.us", "threatcrowd",
-	"threatminer", "torexonerator", "virustotal", "whois", "all"}
+	"org_whois", "robtex", "shodan", "scamalytics", "spamhaus", "spur.us", 
+	"threatcrowd", "threatminer", "torexonerator", "virustotal", "whois", "all"}
 
 // DomainMethods - List of all the methods to apply to domain assets
 var DomainMethods []string = []string{"alienvault", "dnsa", "dnsmx", "dnstxt",
-	"org_whois", "phishtank", "resolve", "robtex", "virustotal", "urlscan.io",
-	"threatcrowd", "threatminer", "whois", "all"}
+	"ibmxforce", "org_whois", "phishtank", "resolve", "robtex", "spamhaus", 
+	"virustotal", "urlscan.io", "threatcrowd", "threatminer", "whois", "all"}
 
 // DefUserAgent - Default user agent to use for all web requests
 var DefUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
@@ -136,8 +136,17 @@ const HybridAnalysisWebsite = "https://hybrid-analysis.com/search?query="
 // TorExoneratorWebsite - URL for the Tor Exonerator to check if an IP is TOR
 const TorExoneratorWebsite = "https://metrics.torproject.org/exonerator.html"
 
-// IBMXForceURL - URL for the IBM XForce website/UI
-const IBMXForceURL = "https://exchange.xforce.ibmcloud.com/ip/"
+// IBMXForceIPURL - URL for the IBM XForce website/UI
+const IBMXForceIPURL = "https://exchange.xforce.ibmcloud.com/ip/"
+
+// IBMXForceDomainURL - URL for the IBM XForce website/UI
+const IBMXForceDomainURL = "https://exchange.xforce.ibmcloud.com/url/"
+
+// SpamhausDomainURL - URL for querying Spamhaus 
+const SpamhausDomainURL = "https://www.spamhaus.org/query/domain/"
+
+// SpamhausIPURL - URL for querying Spamhaus 
+const SpamhausIPURL = "https://www.spamhaus.org/query/ip/"
 
 // GetAssetType - Get the type of asset e.g ipv4, domain, md5, sha1, sha256
 // or unknown
@@ -319,6 +328,18 @@ func GetThreatMinerInfo(asset string, domainType string) {
 	openbrowser(url)
 }
 
+// GetSpamhausIPInfo - Get information via Spamhaus about IP 
+func GetSpamhausIPInfo(asset string) { 
+	url := fmt.Sprintf("%s%s", SpamhausIPURL, asset)
+	openbrowser(url)
+}
+
+// GetSpamhausDomainInfo - Get information via Spamhaus about domain
+func GetSpamhausDomainInfo(asset string) {
+	url := fmt.Sprintf("%s%s", SpamhausDomainURL, asset)
+	openbrowser(url)
+}
+
 // GetRobtexIPInfo - Get RobTex Info about domain/IP
 func GetRobtexIPInfo(asset string) {
 	// Build the Robtex URL to open in the browser
@@ -411,7 +432,14 @@ func GetIPInfoHybridAnalysis(asset string) {
 // GetIPInfoIBMXForce - Function to get the information about an IP via IBM
 //     X-Force
 func GetIPInfoIBMXForce(asset string) {
-	url := fmt.Sprintf("%s%s", IBMXForceURL, asset)
+	url := fmt.Sprintf("%s%s", IBMXForceIPURL, asset)
+	openbrowser(url)
+}
+
+// GetDomainInfoIBMXForce - Function to get the information about an IP via IBM
+//     X-Force
+func GetDomainInfoIBMXForce(asset string) {
+	url := fmt.Sprintf("%s%s", IBMXForceDomainURL, asset)
 	openbrowser(url)
 }
 
@@ -741,6 +769,10 @@ func main() {
 						ipInfo += displayProgress(assetType, asset, "robtex")
 						GetRobtexIPInfo(asset)
 					}
+					if shouldExecMethod(methodIP, "spamhaus") {
+						ipInfo += displayProgress(assetType, asset, "spamhaus")
+						GetSpamhausIPInfo(asset)
+					}
 					if shouldExecMethod(methodIP, "threatcrowd") {
 						ipInfo += displayProgress(assetType, asset, "threatcrowd")
 						GetThreatCrowdIPInfo(asset)
@@ -764,6 +796,10 @@ func main() {
 					if shouldExecMethod(methodDomain, "whois") {
 						domainInfo += displayProgress(assetType, asset, "whois")
 						domainInfo += GetWhoIs(asset) + "\n\n"
+					}
+					if shouldExecMethod(methodIP, "ibmxforce") {
+						ipInfo += displayProgress(assetType, asset, "ibmxforce")
+						GetDomainInfoIBMXForce(asset)
 					}
 					if shouldExecMethod(methodDomain, "alienvault") {
 						domainInfo += displayProgress(assetType, asset, "alienvault")
@@ -797,6 +833,10 @@ func main() {
 					if shouldExecMethod(methodDomain, "threatminer") {
 						domainInfo += displayProgress(assetType, asset, "threatminer")
 						GetThreatMinerInfo(asset, "domain")
+					}
+					if shouldExecMethod(methodDomain, "spamhaus") {
+						ipInfo += displayProgress(assetType, asset, "spamhaus")
+						GetSpamhausDomainInfo(asset)
 					}
 					if shouldExecMethod(methodDomain, "robtex") {
 						domainInfo += displayProgress(assetType, asset, "robtex")
