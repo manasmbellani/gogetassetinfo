@@ -100,8 +100,11 @@ const AlienVaultIPv6Sections = "general,reputation,geo,malware,url_list,passive_
 // AlienVaultDomainSections - sections to get for domain from AlienVault
 const AlienVaultDomainSections = "general,geo,malware,url_list,whois,passive_dns"
 
-// ThreatMinerURL - URL to get information about an IP address or Domain via ThreatMiner
-const ThreatMinerURL = "https://www.threatminer.org/host.php?q="
+// ThreatMinerIPURL - URL to get information about IP address via ThreatMiner
+const ThreatMinerIPURL = "https://www.threatminer.org/host.php?q="
+
+// ThreatMinerDomainURL - URL to get information about Domain via ThreatMiner
+const ThreatMinerDomainURL = "https://www.threatminer.org/domain.php?q="
 
 // RobtexIPLookupURL - URL of the Robtex to lookup IP
 const RobtexIPLookupURL = "https://www.robtex.com/ip-lookup/"
@@ -304,10 +307,15 @@ func GetIPInfoIPHub(asset string, ipHubAPIKey string) string {
 }
 
 // GetThreatMinerInfo - Get ThreatMiner Info about the domain/IP
-func GetThreatMinerInfo(asset string) {
+func GetThreatMinerInfo(asset string, domainType string) {
 
 	// Build the ThreatMiner URL to open in the browser
-	url := fmt.Sprintf("%s%s", ThreatMinerURL, asset)
+	url := ""
+	if domainType == "domain" {
+		url = fmt.Sprintf("%s%s", ThreatMinerDomainURL, asset)
+	} else {
+		url = fmt.Sprintf("%s%s", ThreatMinerIPURL, asset)
+	}
 	openbrowser(url)
 }
 
@@ -727,7 +735,7 @@ func main() {
 					}
 					if shouldExecMethod(methodIP, "threatminer") {
 						ipInfo += displayProgress(assetType, asset, "threatminer")
-						GetThreatMinerInfo(asset)
+						GetThreatMinerInfo(asset, "ip")
 					}
 					if shouldExecMethod(methodIP, "robtex") {
 						ipInfo += displayProgress(assetType, asset, "robtex")
@@ -788,7 +796,7 @@ func main() {
 					}
 					if shouldExecMethod(methodDomain, "threatminer") {
 						domainInfo += displayProgress(assetType, asset, "threatminer")
-						GetThreatMinerInfo(asset)
+						GetThreatMinerInfo(asset, "domain")
 					}
 					if shouldExecMethod(methodDomain, "robtex") {
 						domainInfo += displayProgress(assetType, asset, "robtex")
