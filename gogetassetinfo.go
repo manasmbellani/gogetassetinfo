@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -41,13 +42,15 @@ const RegexWhoIsOrgName = "(?i)(Registrant Organization|Tech Organization|OrgNam
 // IPMethods - List of all the methods to apply to IP assets
 var IPMethods []string = []string{"abuseip", "alienvault", "dnsptr", "iphub",
 	"googlevpncheck", "hybridanalysis", "ibmxforce", "ipinfo.io", "ipqualityscore",
-	"org_whois", "robtex", "shodan", "scamalytics", "spamhaus", "spur.us", 
-	"threatcrowd", "threatminer", "torexonerator", "virustotal", "whois", "all"}
+	"org_whois", "httpheaders", "httpredirects", "robtex", "shodan", "scamalytics", 
+	"spamhaus", "spur.us", "threatcrowd", "threatminer", "torexonerator", "virustotal", 
+	"whois", "all"}
 
 // DomainMethods - List of all the methods to apply to domain assets
 var DomainMethods []string = []string{"alienvault", "dnsa", "dnsmx", "dnstxt",
-	"ibmxforce", "org_whois", "phishtank", "resolve", "robtex", "spamhaus", 
-	"virustotal", "urlscan.io", "threatcrowd", "threatminer", "whois", "all"}
+	"ibmxforce", "org_whois", "phishtank", "httpheaders", "httpredirects", "resolve", 
+	"robtex", "spamhaus", "virustotal", "urlscan.io", "threatcrowd", "threatminer", 
+	"whois", "all"}
 
 // DefUserAgent - Default user agent to use for all web requests
 var DefUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
@@ -147,6 +150,7 @@ const SpamhausDomainURL = "https://www.spamhaus.org/query/domain/"
 
 // SpamhausIPURL - URL for querying Spamhaus 
 const SpamhausIPURL = "https://www.spamhaus.org/query/ip/"
+
 
 // GetAssetType - Get the type of asset e.g ipv4, domain, md5, sha1, sha256
 // or unknown
@@ -462,6 +466,73 @@ func GetIPInfoIPQualityScore(asset string) {
 	url := IPQualityScoreURL + "/" + asset
 	openbrowser(url)
 }
+
+// GetHTTPHeadersInfo - Get the Final HTTP Headers for http/https
+func GetHTTPHeadersInfo(asset string) string {
+	out := ""
+
+	protocols := []string{"http", "https"}
+	for _, protocol := range protocols {
+		nextURL := protocol + "://" + asset
+
+		out += fmt.Sprintf("[*] Getting redirects for URL: %s\n", nextURL)
+	
+		resp, err := http.Get(nextURL)
+
+		if err != nil {
+			log.Println(err)
+		}
+
+		out += fmt.Sprintf("StatusCode: %d\n", resp.StatusCode)
+		out += fmt.Sprintf("ContentLength: %d\n", resp.ContentLength)
+		out += fmt.Sprintf("Headers:\n")
+		
+		h, err := json.MarshalIndent(resp.Header, "", "  ")
+		if err != nil {
+			log.Println("[-] Error prettying HTTP headers: ", err)
+		}
+		out += string(h) + "\n\n"
+	}
+	return out
+}
+
+// GetRedirectsInfo - Get the redirect URLs
+func GetHTTPRedirectsInfo(asset string) string {
+	out := ""
+
+	protocols := []string{"http", "https"}
+	for _, protocol := range protocols {
+		nextURL := protocol + "://" + asset
+
+		out += fmt.Sprintf("[*] Getting redirects for URL: %s\n", nextURL)
+		var i int
+		for i < 10 {
+			client := &http.Client{
+				CheckRedirect: func(req *http.Request, via []*http.Request) error {
+					return http.ErrUseLastResponse
+				},
+			}
+
+			resp, err := client.Get(nextURL)
+
+			if err != nil {
+				log.Println(err)
+			}
+
+			out += fmt.Sprintf("StatusCode: %d\n", resp.StatusCode)
+			out += fmt.Sprintf(resp.Request.URL.String() + "\n\n")
+
+			if resp.StatusCode >= 400 || resp.StatusCode < 300 {
+				break
+			} else {
+				nextURL = resp.Header.Get("Location")
+				i += 1
+			}
+		}
+	}
+	return out
+}
+
 
 // openbrowser - Opens a browser in relevant OS to display URL
 func openbrowser(url string) {
@@ -785,6 +856,14 @@ func main() {
 						ipInfo += displayProgress(assetType, asset, "org_whois")
 						ipInfo += GetOrgNameWhoIs(asset)
 					}
+					if shouldExecMethod(methodIP, "httpredirects") {
+						ipInfo += displayProgress(assetType, asset, "httpredirects")
+						ipInfo += GetHTTPRedirectsInfo(asset)
+					}
+					if shouldExecMethod(methodIP, "httpheaders") {
+						ipInfo += displayProgress(assetType, asset, "httpheaders")
+						ipInfo += GetHTTPHeadersInfo(asset)
+					}
 					// Display results to the user
 					if ipInfo != "" {
 						fmt.Printf("[+] Info on IP: %s via method: %s\n%s\n\n", asset,
@@ -849,6 +928,14 @@ func main() {
 					if shouldExecMethod(methodDomain, "org_whois") {
 						domainInfo += displayProgress(assetType, asset, "org_whois")
 						domainInfo += GetOrgNameWhoIs(asset)
+					}
+					if shouldExecMethod(methodDomain, "httpredirects") {
+						domainInfo += displayProgress(assetType, asset, "httpredirects")
+						domainInfo += GetHTTPRedirectsInfo(asset)
+					}
+					if shouldExecMethod(methodDomain, "httpheaders") {
+						domainInfo += displayProgress(assetType, asset, "httpheaders")
+						domainInfo += GetHTTPHeadersInfo(asset)
 					}
 					if domainInfo != "" {
 						fmt.Printf("[+] Info on domain: %s via method: %s\n%s\n\n", asset,

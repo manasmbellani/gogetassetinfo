@@ -206,8 +206,6 @@ $ cat ips-subdomains.txt | go run gogetassetinfo.go -mi robtex -md robtex
 ### TODO
 
 #### URL
-- [ ] Get ALL URL redirections
-- [ ] Get response headers in the URL
 
 #### IP
 - [ ] Add Kloth for IP abuse checks - MultiDNSBL-check: https://kloth.net/services/dnsbl.php
