@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -219,6 +220,11 @@ func GetDNSMX(domain string) string {
 
 // GetIPInfoIo - Get IP information via ipinfo.io
 func GetIPInfoIo(asset string) string {
+	defer func() {
+		if r := recover(); r != nil {
+		   fmt.Printf("[-] Recovering panic in GetIPInfoIo for asset: %s. Err: %v \n", asset, r)
+	   }
+	 }()
 
 	// Building the HTTP request template
 	client := &http.Client{}
@@ -239,6 +245,11 @@ func GetIPInfoIo(asset string) string {
 
 // GetAbuseIPInfo - Get IP information via abuseip database through APIv2 API
 func GetAbuseIPInfo(asset string, abuseIPKey string, abuseReportVerbose bool) string {
+	defer func() {
+		if r := recover(); r != nil {
+		   fmt.Printf("[-] Recovering panic in GetAbuseIPInfo for asset: %s. Err: %v \n", asset, r)
+	   }
+	 }()
 
 	if abuseIPKey == "" {
 		// Check os environ variables for the iphub API key
@@ -289,6 +300,12 @@ func GetAbuseIPInfo(asset string, abuseIPKey string, abuseReportVerbose bool) st
 // GetIPInfoIPHub - Function to make IPHub.info API request to get more info on
 // IP asset
 func GetIPInfoIPHub(asset string, ipHubAPIKey string) string {
+	defer func() {
+		if r := recover(); r != nil {
+		   fmt.Printf("[-] Recovering panic in GetIPInfoIPHub for asset: %s. Err: %v \n", asset, r)
+	   }
+	 }()
+
 	// Check if IPHub Key provided
 	if ipHubAPIKey == "" {
 		// Check os environ variables for the iphub API key
@@ -471,13 +488,19 @@ func GetIPInfoIPQualityScore(asset string) {
 func GetHTTPHeadersInfo(asset string) string {
 	out := ""
 
+	// setup configuration to ignore 
+	transCfg := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, 
+	}
+	client := &http.Client{Transport: transCfg}
+
 	protocols := []string{"http", "https"}
 	for _, protocol := range protocols {
 		nextURL := protocol + "://" + asset
 
 		out += fmt.Sprintf("[*] Getting redirects for URL: %s\n", nextURL)
 	
-		resp, err := http.Get(nextURL)
+		resp, err := client.Get(nextURL)
 
 		if err != nil {
 			log.Println(err)
@@ -493,11 +516,18 @@ func GetHTTPHeadersInfo(asset string) string {
 		}
 		out += string(h) + "\n\n"
 	}
+	
 	return out
 }
 
 // GetRedirectsInfo - Get the redirect URLs
 func GetHTTPRedirectsInfo(asset string) string {
+	defer func() {
+		if r := recover(); r != nil {
+		   fmt.Printf("[-] Recovering panic in GetHTTPRedirectsInfo for asset: %s. Err: %v \n", asset, r)
+	   }
+	 }()
+
 	out := ""
 
 	protocols := []string{"http", "https"}
@@ -512,7 +542,7 @@ func GetHTTPRedirectsInfo(asset string) string {
 					return http.ErrUseLastResponse
 				},
 			}
-
+			
 			resp, err := client.Get(nextURL)
 
 			if err != nil {
@@ -649,6 +679,11 @@ func GetVirustotalInfo(asset string, assetType string) {
 
 // GetAlienVaultInfo - Get the alienvault information for asset (IP/IPv4, domain)
 func GetAlienVaultInfo(asset string, assetType string) string {
+	defer func() {
+		if r := recover(); r != nil {
+		   fmt.Printf("[-] Recovering panic in GetAlienVaultInfo for asset: %s. Err: %v \n", asset, r)
+	   }
+	 }()
 
 	// Store the output
 	out := ""
