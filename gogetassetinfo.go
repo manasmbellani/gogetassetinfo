@@ -486,6 +486,12 @@ func GetIPInfoIPQualityScore(asset string) {
 
 // GetHTTPHeadersInfo - Get the Final HTTP Headers for http/https
 func GetHTTPHeadersInfo(asset string) string {
+	defer func() {
+		if r := recover(); r != nil {
+		   fmt.Printf("[-] Recovering panic in GetHTTPHeadersInfo for asset: %s. Err: %v \n", asset, r)
+	   }
+	 }()
+
 	out := ""
 
 	// setup configuration to ignore 
@@ -498,7 +504,7 @@ func GetHTTPHeadersInfo(asset string) string {
 	for _, protocol := range protocols {
 		nextURL := protocol + "://" + asset
 
-		out += fmt.Sprintf("[*] Getting redirects for URL: %s\n", nextURL)
+		out += fmt.Sprintf("[*] Getting HTTP headers for URL: %s\n", nextURL)
 	
 		resp, err := client.Get(nextURL)
 
