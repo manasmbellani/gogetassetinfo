@@ -44,14 +44,14 @@ const RegexWhoIsOrgName = "(?i)(Registrant Organization|Tech Organization|OrgNam
 var IPMethods []string = []string{"abuseip", "alienvault", "dnsptr", "iphub",
 	"googlevpncheck", "hybridanalysis", "ibmxforce", "ipinfo.io", "ipqualityscore",
 	"org_whois", "httpheaders", "httpredirects", "robtex", "shodan", "scamalytics", 
-	"spamhaus", "spur.us", "threatcrowd", "threatminer", "torexonerator", "virustotal", 
-	"whois", "all"}
+	"spamhaus", "spur.us", "threatcrowd", "threatminer", "torexonerator", "urlhaus",
+	"virustotal", "whois", "all"}
 
 // DomainMethods - List of all the methods to apply to domain assets
 var DomainMethods []string = []string{"alienvault", "dnsa", "dnsmx", "dnstxt",
 	"ibmxforce", "org_whois", "phishtank", "httpheaders", "httpredirects", "resolve", 
 	"robtex", "spamhaus", "virustotal", "urlscan.io", "threatcrowd", "threatminer", 
-	"whois", "all"}
+	"urlhaus", "whois", "all"}
 
 // DefUserAgent - Default user agent to use for all web requests
 var DefUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
@@ -133,6 +133,9 @@ const AbuseIPWebsite = "https://www.abuseipdb.com/check/"
 
 // SpurUSWebsite - URL for the spur.us website to identify VPN IPs
 const SpurUSWebsite = "https://spur.us/context/"
+
+// URLHausWebsite - URL for the URLHaus website to identify suspicious domains/IPs
+const URLHausWebsite = "https://urlhaus.abuse.ch/browse.php?search="
 
 // HybridAnalysisWebsite - URL for the Hybrid Analysis website
 const HybridAnalysisWebsite = "https://hybrid-analysis.com/search?query="
@@ -439,6 +442,13 @@ func GetIPVPNInfo(asset string) {
 func GetIPVPNInfoSpurUS(asset string) {
 	// Open spur.us website
 	url := fmt.Sprintf("%s%s", SpurUSWebsite, asset)
+	openbrowser(url)
+}
+
+// GetURLHausInfo - Function to get URLHaus info about a domain/URL/IP
+func GetURLHausInfo(asset string) {
+	// Open spur.us website
+	url := fmt.Sprintf("%s%s", URLHausWebsite, asset)
 	openbrowser(url)
 }
 
@@ -857,6 +867,10 @@ func main() {
 						ipInfo += displayProgress(assetType, asset, "spur.us")
 						GetIPVPNInfoSpurUS(asset)
 					}
+					if shouldExecMethod(methodIP, "urlhaus") {
+						ipInfo += displayProgress(assetType, asset, "urlhaus")
+						GetURLHausInfo(asset)
+					}
 					if shouldExecMethod(methodIP, "hybridanalysis") {
 						ipInfo += displayProgress(assetType, asset, "hybridanalysis")
 						GetIPInfoHybridAnalysis(asset)
@@ -953,6 +967,10 @@ func main() {
 					if shouldExecMethod(methodDomain, "threatminer") {
 						domainInfo += displayProgress(assetType, asset, "threatminer")
 						GetThreatMinerInfo(asset, "domain")
+					}
+					if shouldExecMethod(methodIP, "urlhaus") {
+						ipInfo += displayProgress(assetType, asset, "urlhaus")
+						GetURLHausInfo(asset)
 					}
 					if shouldExecMethod(methodDomain, "spamhaus") {
 						ipInfo += displayProgress(assetType, asset, "spamhaus")
