@@ -26,8 +26,10 @@ of the `gogetassetinfo` binary.
 * Robtex - Perform Domain or IP analysis via Robtex
 * Scamalytics - Provides reputation about an IP via the scamalytics.com website
 * Shodan - provides info about an IP in browser via Shodan itself.
+* Spur.us - provides info about an IP in browser whether it is a VPN
 * Threatminer - Returns reputation info about domain or IP address
 * ThreatCrowd - Returns reputation info about domain or IP address
+* URLHaus - Returns reputation info about domain or IP address
 * URLscan.io - Run the URLScan.io to scan domain
 * Virustotal - Perform Virustotal search within browser on IPs, domains
 * WhoIs - Provide Whois info on domain/IP
@@ -203,7 +205,29 @@ google.com
 $ cat ips-subdomains.txt | go run gogetassetinfo.go -mi robtex -md robtex
 ```
 
+### Using URLHaus 
+To get the information about IP and domain name via URLHaus
+```
+$ cat ip-subdomains.txt
+google.com
+1.1.1.1
+
+$ cat ip-subdomains.txt | go run gogetassetinfo.go -mi urlhaus -md urlhaus
+```
+
+### Using Spur.us 
+To get the information about IP and domain name via spur.us
+```
+$ cat ip-subdomains.txt
+google.com
+1.1.1.1
+
+$ cat ip-subdomains.txt | go run gogetassetinfo.go -mi spur.us -md urlhaus
+```
+
 ### TODO
+- [ ] Add support for checking MD5/SHA256 hashes via various sources such as 
+URLHaus, Virustotal
 
 #### URL
 
