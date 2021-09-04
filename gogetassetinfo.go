@@ -92,8 +92,11 @@ const IPQualityScoreURL = "https://www.ipqualityscore.com/free-ip-lookup-proxy-v
 // AlienVaultIndicatorURL - the URL to get the Alienvault indicators
 const AlienVaultIndicatorURL = "https://otx.alienvault.com/api/v1/indicators"
 
-// ShodanURL - the URL to get the info about the IP from
+// ShodanURL - the Shodan.io URL to get the info about the IP from
 const ShodanURL = "https://www.shodan.io/host/"
+
+// GreyNoiseURL - the GreyNoise.io URL to get the info about the IP from
+const GreyNoiseURL = "https://www.greynoise.io/viz/ip/"
 
 // AlienVaultIPv4Sections - sections to get for IPv4 from AlienVault
 const AlienVaultIPv4Sections = "general,reputation,geo,malware,url_list,passive_dns,http_scans"
@@ -427,6 +430,13 @@ func GetDomainInfoPhishtank(asset string) string {
 // Shodan.io
 func GetIPInfoShodanIo(asset string) {
 	url := ShodanURL + asset
+	openbrowser(url)
+}
+
+// GetIPInfoGreyNoiseIo - Function to open browser to get info about the IP via
+// Greynoise.io
+func GetIPInfoGreyNoiseIo(asset string) {
+	url := GreyNoiseURL + asset
 	openbrowser(url)
 }
 
@@ -842,6 +852,10 @@ func main() {
 					if shouldExecMethod(methodIP, "shodan") {
 						ipInfo += displayProgress(assetType, asset, "shodan")
 						GetIPInfoShodanIo(asset)
+					}
+					if shouldExecMethod(methodIP, "greynoise") {
+						ipInfo += displayProgress(assetType, asset, "greynoise")
+						GetIPInfoGreyNoiseIo(asset)
 					}
 					if shouldExecMethod(methodIP, "scamalytics") {
 						ipInfo += displayProgress(assetType, asset, "scamalytics")

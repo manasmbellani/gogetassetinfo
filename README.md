@@ -225,9 +225,26 @@ google.com
 $ cat ip-subdomains.txt | go run gogetassetinfo.go -mi spur.us -md urlhaus
 ```
 
+### Using greynoise.io 
+To get the information about scanning activity about an IP via greynoise.io
+```
+$ cat ip.txt
+45.155.204.227
+
+$ cat ip.txt | go run gogetassetinfo.go -mi greynoise
+```
+
 ### TODO
 - [ ] Add support for checking MD5/SHA256 hashes via various sources such as 
 URLHaus, Virustotal
+
+- [ ] Search for malware on malshare.com where malware can also be downloaded
+```
+https://malshare.com/search.php?query=0c3c45d8986dda1be12826bde2efd027
+```
+
+- [ ] Search for a hash in hybrid-analysis where payload can also be downloaded
+
 
 #### URL
 
